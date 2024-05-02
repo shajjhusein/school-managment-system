@@ -283,3 +283,9 @@ ALTER TABLE schedule
   MODIFY id int(100) NOT NULL AUTO_INCREMENT;
 
 
+--
+-- TODO
+--
+
+ALTER TABLE courses
+MODIFY COLUMN class_id INT DEFAULT NULL;

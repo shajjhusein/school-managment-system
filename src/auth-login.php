@@ -81,12 +81,7 @@ if (isset($_POST['email'])) {
                     </div>
                     <!-- end card -->
 
-                    <div class="row mt-3">
-                        <div class="col-12 text-center">
-                            <p> <a href="auth-recoverpw.php" class="text-muted ms-1"><i class="fa fa-lock me-1"></i>Forgot your password?</a></p>
-                            <p class="text-muted">Don't have an account? <a href="auth-register.php" class="text-dark ms-1"><b>Sign Up</b></a></p>
-                        </div> <!-- end col -->
-                    </div>
+
                     <!-- end row -->
 
                 </div> <!-- end col -->

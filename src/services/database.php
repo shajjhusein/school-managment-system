@@ -142,15 +142,6 @@ class DatabaseService
         );
         $stmt->execute([$id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);  // Fetches the user and class_id as an associative array.
-
-        // Log to browser console
-        if ($user) {
-            $userDataJson = json_encode($user);
-            echo "<script>console.log('Debug Info: User fetched successfully with ID = $id', $userDataJson);</script>";
-        } else {
-            echo "<script>console.log('Debug Info: Failed to fetch user with ID = $id');</script>";
-        }
-
         return $user;
     }
 
@@ -206,18 +197,21 @@ class DatabaseService
             return false;
         }
     }
-    // Fetch all classes
-    // public function getClasses()
-    // {
-    //     $stmt = $this->db->prepare("SELECT * FROM classes");
-    //     $stmt->execute();
-    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // }
-
+    public function getClassById($id)
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM classe WHERE id = ?");
+            $stmt->execute([$id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error fetching class: " . $e->getMessage());
+            return null;
+        }
+    }
     // Add a class
     public function addClass($name, $section)
     {
-        $stmt = $this->db->prepare("INSERT INTO classes (name, section) VALUES (?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO classe (name, section) VALUES (?, ?)");
         $stmt->execute([$name, $section]);
         return $stmt->rowCount() > 0;
     }
@@ -225,7 +219,7 @@ class DatabaseService
     // Update a class
     public function updateClass($id, $name, $section)
     {
-        $stmt = $this->db->prepare("UPDATE classes SET name = ?, section = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE classe SET name = ?, section = ? WHERE id = ?");
         $stmt->execute([$name, $section, $id]);
         return $stmt->rowCount() > 0;
     }
@@ -233,8 +227,90 @@ class DatabaseService
     // Delete a class
     public function deleteClass($id)
     {
-        $stmt = $this->db->prepare("DELETE FROM classes WHERE id = ?");
+        $stmt = $this->db->prepare("DELETE FROM classe WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
+    }
+
+    public function getCourses()
+    {
+        $stmt = $this->db->prepare("SELECT * FROM course");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addCourse($name, $description)
+    {
+        $stmt = $this->db->prepare("INSERT INTO course (name, description) VALUES (?, ?)");
+        $stmt->execute([$name, $description]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function updateCourse($id, $name, $description)
+    {
+        $stmt = $this->db->prepare("UPDATE course SET name = ?, description = ? WHERE id = ?");
+        $stmt->execute([$name, $description, $id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function deleteCourse($id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM course WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function getCourseById($id)
+    {
+        try {
+            // Prepare the SQL query to retrieve the course row based on the provided ID
+            $stmt = $this->db->prepare("SELECT * FROM course WHERE id = ?");
+            // Execute the prepared statement with the provided course ID
+            $stmt->execute([$id]);
+            // Fetch the result row
+            return $stmt->fetch(PDO::FETCH_ASSOC);  // Fetches the course as an associative array.
+        } catch (PDOException $e) {
+            // If there's a PDO exception, log the error message
+            error_log("Error fetching course: " . $e->getMessage());
+            return null;  // Return null if an error occurs
+        }
+    }
+
+    public function getAssignedCourses($class_id)
+    {
+        $stmt = $this->db->prepare("SELECT course.id, course.name,course.description  FROM course JOIN class_course ON course.id = class_course.course_id WHERE class_course.class_id = ?");
+        $stmt->execute([$class_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function removeCourseFromClass($course_id, $class_id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM class_course WHERE course_id = ? AND class_id = ?");
+        $stmt->execute([$course_id, $class_id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    public function assignCourseToClass($courseId, $classId)
+    {
+        try {
+            // First, check if the course is already assigned to the class
+            $checkStmt = $this->db->prepare("SELECT COUNT(*) FROM class_course WHERE class_id = ? AND course_id = ?");
+            $checkStmt->execute([$classId, $courseId]);
+            $exists = $checkStmt->fetchColumn() > 0;
+
+            if ($exists) {
+                // Return a specific value or throw an exception if the course is already assigned
+                return false; // Indicates that the course is already assigned
+            }
+
+            // If not already assigned, proceed to insert the new assignment
+            $stmt = $this->db->prepare("INSERT INTO class_course (class_id, course_id) VALUES (?, ?)");
+            $stmt->execute([$classId, $courseId]);
+            return true; // Return true to indicate successful assignment
+        } catch (PDOException $e) {
+            // Log and handle any error during the database operation
+            error_log("Failed to assign course to class: " . $e->getMessage());
+            return false; // Return false if an error occurs
+        }
     }
 }

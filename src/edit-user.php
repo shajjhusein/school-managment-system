@@ -122,10 +122,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         </div>
                                         <div class="col-md-6 mb-3" id="class-container" style="display: none;">
                                             <label for="class" class="form-label">Class Name</label>
-                                            <select id="class" name="class" class="form-select" value="<?php echo htmlspecialchars($current_user['class_id'] ?? ''); ?>">
+                                            <select id="class" name="class" class="form-select">
                                                 <option value="">Please select a class</option>
                                                 <?php foreach ($classes as $class) : ?>
-                                                    <option value="<?php echo htmlspecialchars($class['id']); ?>"><?php echo htmlspecialchars($class['name']); ?></option>
+                                                    <option <?php echo (isset($current_user['class_id']) &&  htmlspecialchars($class['id']) == htmlspecialchars($current_user['class_id'])) ? 'selected' : ''; ?> value="<?php echo htmlspecialchars($class['id']); ?>"><?php echo htmlspecialchars($class['name']); ?></option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>

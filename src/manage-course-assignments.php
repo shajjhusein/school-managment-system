@@ -4,31 +4,49 @@ require_once('./services/database.php');
 
 $databaseService = DatabaseService::getInstance();
 
-// Redirect if user is not set or not logged in
 if (!isset($_SESSION['user'])) {
     header('Location: auth-login.php');
     exit();
 }
+$allCourses = $databaseService->getCourses();  // Fetch all courses
+$class_id = $_GET['class_id'] ?? null;
+if (!$class_id) {
+    header('Location: classes.php'); // Redirect if no class ID is provided
+    exit();
+}
 
-// Fetch classes
-$classes = $databaseService->getClasses();
+// Fetch courses assigned to the class
+$assignedCourses = $databaseService->getAssignedCourses($class_id);
 
-// Handle class deletion request
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
-    $deleteId = $_POST['delete_class_id'];
-    if ($databaseService->deleteClass($deleteId)) {
-        header('Location: classes.php');  // Reload the page to reflect changes
+// Handle course removal from class
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remove_course_id'])) {
+    $courseId = $_POST['remove_course_id'];
+    if ($databaseService->removeCourseFromClass($courseId, $class_id)) {
+        header("Location: manage-course-assignments.php?class_id=$class_id"); // Refresh the page on success
         exit();
+    } else {
+        $error = "Failed to remove the course.";
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_course'])) {
+    $selectedCourseId = $_POST['class'];
+    // Add selected course to class
+    if ($databaseService->assignCourseToClass($selectedCourseId, $class_id)) {
+        // Fetch updated list of courses after addition
+        $assignedCourses = $databaseService->getAssignedCourses($class_id);
+    } else {
+        $error = "Failed to add course.";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
 
-    <?php $title = "Manage Classes";
+    <?php $title = "Manage Classe Courses";
     include 'partials/title-meta.php'; ?>
 
     <?php include 'partials/head-css.php'; ?>
@@ -52,11 +70,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
 </head>
 
 <?php include 'partials/body.php'; ?>
-
+<script>
+    function toggleAddCourseForm() {
+        var form = document.getElementById('add-course-form');
+        form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+    }
+</script>
 <!-- Begin page -->
 <div id="wrapper">
 
-    <?php $pagetitle = "Manage Classes";
+    <?php $pagetitle = "Manage Classe Courses";
     include 'partials/menu.php'; ?>
     <!-- third party css -->
     <link href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
@@ -74,9 +97,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
 
             <!-- Start Content-->
             <div class="container-fluid">
-
                 <div class="row add-new-action">
-                    <button style="width: 200px;" type="button" class="btn btn-primary waves-effect waves-light" onclick="window.location.href='edit-class.php';">Add New</button>
+                    <button style="width: 200px;" type="button" class="btn btn-primary waves-effect waves-light" onclick="toggleAddCourseForm()">Add Course</button>
+                </div>
+                <div class="row" id="add-course-form" style="display: none;">
+                    <?php if (!empty($error)) echo "<p class='text-danger'>$error</p>"; ?>
+                    <form method="post" action="">
+                        <div class="col-md-6 mb-3">
+                            <label for="class" class="form-label">Courses</label>
+                            <select id="class" name="class" class="form-select">
+                                <option value="">Please select a course</option>
+                                <?php foreach ($allCourses as $course) : ?>
+                                    <option value="<?php echo htmlspecialchars($course['id']); ?>"><?php echo htmlspecialchars($course['name']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <button type="submit" name="add_course" class="btn btn-primary waves-effect waves-light">Add Course</button>
+
+                        </div>
+                    </form>
                 </div>
                 <div class="row">
                     <div class="col-12">
@@ -86,28 +126,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
                                 <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Section</th>
+                                            <th>Course ID</th>
+                                            <th>Course Name</th>
+                                            <th>Description</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($classes as $class) : ?>
+                                        <?php foreach ($assignedCourses as $course) : ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($class['id']); ?></td>
-                                                <td><?php echo htmlspecialchars($class['name']); ?></td>
-                                                <td><?php echo htmlspecialchars($class['section']); ?></td>
-                                                <td class="user-actions">
-                                                    <a href="edit-class.php?id=<?php echo urlencode($class['id']); ?>" class="btn btn-success edit-action">Edit</a>
-                                                    <form method="POST" action="classes.php" class="edit-action">
-                                                        <input type="hidden" name="delete_class_id" value="<?php echo $class['id']; ?>">
-                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class?');">Delete</button>
+                                                <td><?php echo htmlspecialchars($course['id']); ?></td>
+                                                <td><?php echo htmlspecialchars($course['name']); ?></td>
+                                                <td><?php echo htmlspecialchars($course['description']); ?></td>
+                                                <td>
+                                                    <form method="POST" action="">
+                                                        <input type="hidden" name="remove_course_id" value="<?php echo htmlspecialchars($course['id']); ?>">
+                                                        <button type="submit" class="btn btn-danger">Remove</button>
                                                     </form>
-                                                    <a href="manage-course-assignments.php?class_id=<?php echo urlencode($class['id']); ?>" class="btn btn-info ">Manage Courses</a>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
+
                                     </tbody>
                                 </table>
                             </div>

@@ -10,14 +10,14 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-// Fetch classes
-$classes = $databaseService->getClasses();
+// Fetch courses
+$courses = $databaseService->getCourses();
 
-// Handle class deletion request
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
-    $deleteId = $_POST['delete_class_id'];
-    if ($databaseService->deleteClass($deleteId)) {
-        header('Location: classes.php');  // Reload the page to reflect changes
+// Handle course deletion request
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_course_id'])) {
+    $deleteId = $_POST['delete_course_id'];
+    if ($databaseService->deleteCourse($deleteId)) {
+        header('Location: courses.php');  // Reload the page to reflect changes
         exit();
     }
 }
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
 
 <head>
 
-    <?php $title = "Manage Classes";
+    <?php $title = "Manage Courses";
     include 'partials/title-meta.php'; ?>
 
     <?php include 'partials/head-css.php'; ?>
@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
 <!-- Begin page -->
 <div id="wrapper">
 
-    <?php $pagetitle = "Manage Classes";
+    <?php $pagetitle = "Manage Courses";
     include 'partials/menu.php'; ?>
     <!-- third party css -->
     <link href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
             <div class="container-fluid">
 
                 <div class="row add-new-action">
-                    <button style="width: 200px;" type="button" class="btn btn-primary waves-effect waves-light" onclick="window.location.href='edit-class.php';">Add New</button>
+                    <button style="width: 200px;" type="button" class="btn btn-primary waves-effect waves-light" onclick="window.location.href='edit-course.php';">Add New</button>
                 </div>
                 <div class="row">
                     <div class="col-12">
@@ -88,23 +88,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
                                         <tr>
                                             <th>ID</th>
                                             <th>Name</th>
-                                            <th>Section</th>
+                                            <th>Description</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($classes as $class) : ?>
+                                        <?php foreach ($courses as $course) : ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($class['id']); ?></td>
-                                                <td><?php echo htmlspecialchars($class['name']); ?></td>
-                                                <td><?php echo htmlspecialchars($class['section']); ?></td>
+                                                <td><?php echo htmlspecialchars($course['id']); ?></td>
+                                                <td><?php echo htmlspecialchars($course['name']); ?></td>
+                                                <td><?php echo htmlspecialchars($course['description']); ?></td>
                                                 <td class="user-actions">
-                                                    <a href="edit-class.php?id=<?php echo urlencode($class['id']); ?>" class="btn btn-success edit-action">Edit</a>
-                                                    <form method="POST" action="classes.php" class="edit-action">
-                                                        <input type="hidden" name="delete_class_id" value="<?php echo $class['id']; ?>">
-                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class?');">Delete</button>
+                                                    <a href="edit-course.php?id=<?php echo urlencode($course['id']); ?>" class="btn btn-success edit-action">Edit</a>
+                                                    <form method="POST" action="courses.php">
+                                                        <input type="hidden" name="delete_course_id" value="<?php echo $course['id']; ?>">
+                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this course?');">Delete</button>
                                                     </form>
-                                                    <a href="manage-course-assignments.php?class_id=<?php echo urlencode($class['id']); ?>" class="btn btn-info ">Manage Courses</a>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
