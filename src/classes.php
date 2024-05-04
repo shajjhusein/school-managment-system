@@ -12,6 +12,7 @@ if (!isset($_SESSION['user'])) {
 
 // Fetch classes
 $classes = $databaseService->getClasses();
+$login_user_role = $_SESSION['user']["role"];
 
 // Handle class deletion request
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
@@ -104,7 +105,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
                                                         <input type="hidden" name="delete_class_id" value="<?php echo $class['id']; ?>">
                                                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class?');">Delete</button>
                                                     </form>
-                                                    <a href="manage-course-assignments.php?class_id=<?php echo urlencode($class['id']); ?>" class="btn btn-info ">Manage Courses</a>
+                                                    <a href="manage-course-assignments.php?class_id=<?php echo urlencode($class['id']); ?>" class="btn btn-info edit-action">Manage Courses</a>
+                                                    <?php if ($login_user_role === 'director' || $login_user_role === 'supervisor') : ?>
+                                                        <a href="manage-schedule.php?id=<?php echo urlencode($class['id']); ?>" class="btn btn-info">Manage Schedule</a>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

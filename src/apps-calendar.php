@@ -17,9 +17,7 @@
 <?php include 'partials/body.php'; ?>
 
 <!-- Begin page -->
-<div id="wrapper">
-
-    <?php $pagetitle = "Calender";
+<div id="wrapper"> <?php $pagetitle = "Calender";
     include 'partials/menu.php';  ?>
 
     <!-- ============================================================== -->
@@ -39,7 +37,7 @@
                                 <button class="btn btn-lg font-16 btn-success w-100" id="btn-new-event"><i class="fa fa-plus me-1"></i> Create New</button>
 
                                 <div id="external-events">
-                                    <br>
+                                    <!-- <br>
                                     <p class="text-muted">Drag and drop your event or click in the calendar</p>
                                     <div class="external-event bg-primary" data-class="bg-primary">
                                         <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>New Theme Release
@@ -52,14 +50,14 @@
                                     </div>
                                     <div class="external-event bg-purple" data-class="bg-danger">
                                         <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>Create New theme
-                                    </div>
+                                    </div> -->
                                 </div>
 
                                 <!-- checkbox -->
-                                <div class="form-check mt-3">
+                                <!-- <div class="form-check mt-3">
                                     <input type="checkbox" class="form-check-input" id="drop-remove">
                                     <label class="form-check-label" for="drop-remove">Remove after drop</label>
-                                </div>
+                                </div> -->
 
                             </div> <!-- end col-->
 

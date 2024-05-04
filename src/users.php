@@ -13,6 +13,7 @@ if (!isset($_SESSION['user'])) {
 
 // Assuming $_SESSION['user'] is properly set from login
 $user = $_SESSION['user'];
+$login_user_role = $_SESSION['user']["role"];
 $users = $databaseService->getUsers($user['role']);
 
 // Handle deletion request
@@ -112,10 +113,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_id'])) {
                                                 <td><?php echo htmlspecialchars($user['class_name'] ?? ''); ?></td>
                                                 <td class="user-actions">
                                                     <a href="edit-user.php?id=<?php echo urlencode($user['id']); ?>" class="btn btn-success edit-action">Edit</a>
-                                                    <form method="POST" action="users.php">
+                                                    <form method="POST" action="users.php" class="edit-action">
                                                         <input type="hidden" name="delete_id" value="<?php echo $user['id']; ?>">
                                                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button>
                                                     </form>
+                                                    <?php if ($user['role'] === 'instructor' && $login_user_role === 'director') : ?>
+                                                        <a href="manage-instructor.php?id=<?php echo urlencode($user['id']); ?>" class="btn btn-info">Manage Instructor</a>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

@@ -313,4 +313,266 @@ class DatabaseService
             return false; // Return false if an error occurs
         }
     }
+
+    public function getCoursesByClassId($classId)
+    {
+        $stmt = $this->db->prepare("
+        SELECT c.* 
+        FROM course c
+        JOIN class_course cc ON c.id = cc.course_id
+        WHERE cc.class_id = :classId
+    ");
+        $stmt->execute(['classId' => $classId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function assignCourseToInstructor($instructorId, $courseId, $classId)
+    {
+        try {
+            // First, check if the course is already assigned to this instructor for the specified class
+            $checkStmt = $this->db->prepare("SELECT COUNT(*) FROM Instructor_courses WHERE user_id = ? AND course_id = ? AND class_id = ?");
+            $checkStmt->execute([$instructorId, $courseId, $classId]);
+            $exists = $checkStmt->fetchColumn() > 0;
+
+            if ($exists) {
+                // If the assignment already exists, return false or handle as needed
+                return false; // No need to reassign the same course to the same instructor for the same class
+            }
+
+            // If not already assigned, proceed to insert the new assignment
+            $stmt = $this->db->prepare("INSERT INTO Instructor_courses (user_id, course_id, class_id) VALUES (?, ?, ?)");
+            $stmt->execute([$instructorId, $courseId, $classId]);
+            return true; // Return true to indicate successful assignment
+        } catch (PDOException $e) {
+            // Log and handle any error during the database operation
+            // error_log("Failed to assign course to instructor: " . $e->getMessage());
+            return false; // Return false if an error occurs
+        }
+    }
+    public function getCoursesByInstructorAndClass($instructorId, $classId)
+    {
+        try {
+            // Prepare SQL to fetch course details linked through instructor and class
+            $stmt = $this->db->prepare("
+                SELECT c.id, c.name 
+                FROM course AS c
+                JOIN Instructor_courses AS ic ON c.id = ic.course_id
+                WHERE ic.user_id = :instructorId AND ic.class_id = :classId
+            ");
+
+            // Execute the query with bound parameters
+            $stmt->bindParam(':instructorId', $instructorId, PDO::PARAM_INT);
+            $stmt->bindParam(':classId', $classId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Fetch and return results
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Handle potential errors in execution or connection issues
+            error_log("Error fetching courses for instructor and class: " . $e->getMessage());
+            return [];  // Return an empty array on failure
+        }
+    }
+    public function getStudentsByInstructorAndClass($instructorId, $classId)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT DISTINCT users.id, users.name, users.email,course.name as courseName
+                FROM users
+                INNER JOIN studentClass ON users.id = studentClass.user_id
+                INNER JOIN course ON studentClass.class_id = course.class_id
+                INNER JOIN Instructor_courses ON course.id = Instructor_courses.course_id
+                WHERE Instructor_courses.user_id = :instructor_id
+                AND Instructor_courses.class_id = :class_id
+            ");
+            $stmt->bindParam(':instructor_id', $instructorId);
+            $stmt->bindParam(':class_id', $classId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Handle database errors
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
+    public function getStudentsByInstructorAndClassAndCourse($instructorId, $classId, $course_id)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT DISTINCT users.id, users.name, users.email
+                FROM users
+                INNER JOIN studentClass ON users.id = studentClass.user_id
+                INNER JOIN course ON studentClass.class_id = course.class_id
+                INNER JOIN Instructor_courses ON course.id = Instructor_courses.course_id
+                WHERE Instructor_courses.user_id = :instructor_id
+                AND Instructor_courses.class_id = :class_id
+                AND course.id = :course_id
+
+            ");
+            $stmt->bindParam(':instructor_id', $instructorId);
+            $stmt->bindParam(':class_id', $classId);
+            $stmt->bindParam(':course_id', $course_id);
+
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Handle database errors
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
+    // public function generateMonthlySchedule($classId)
+    // {
+    //     try {
+    //         // Fetch courses assigned to the class
+    //         $stmt = $this->db->prepare("SELECT course_id FROM class_course WHERE class_id = :classId");
+    //         $stmt->bindParam(':classId', $classId, PDO::PARAM_INT);
+    //         $stmt->execute();
+    //         $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    //         if (empty($courses)) {
+    //             return false; // No courses found for the class
+    //         }
+
+    //         // Define start times
+    //         $startTime = new DateTime('08:00 AM');
+    //         $endTime = clone $startTime;
+    //         $endTime->modify('+1 hour');
+
+    //         // Generate schedule for one month
+    //         $currentDate = new DateTime(); // Today
+    //         $endDate = clone $currentDate;
+    //         $endDate->modify('+1 month'); // One month from today
+
+    //         while ($currentDate < $endDate) {
+    //             $dayOfWeek = $currentDate->format('l'); // 'Monday', 'Tuesday', etc.
+    //             if ($dayOfWeek !== 'Saturday' && $dayOfWeek !== 'Sunday') { // Skip weekends
+    //                 foreach ($courses as $index => $course) {
+    //                     if ($index >= 6) break; // Max 6 sessions per day
+
+    //                     // Insert session into the database
+    //                     $insertStmt = $this->db->prepare("INSERT INTO schedule (class_id, course_id, day, start_time, end_time) VALUES (:classId, :courseId, :day, :startTime, :endTime)");
+    //                     $insertStmt->bindParam(':classId', $classId);
+    //                     $insertStmt->bindParam(':courseId', $course['course_id']);
+    //                     $insertStmt->bindParam(':day', $currentDate->format('Y-m-d'));
+    //                     $insertStmt->bindParam(':startTime', $startTime->format('H:i:s'));
+    //                     $insertStmt->bindParam(':endTime', $endTime->format('H:i:s'));
+    //                     $insertStmt->execute();
+
+    //                     // Update start and end times for the next session
+    //                     $startTime->modify('+1 hour');
+    //                     $endTime->modify('+1 hour');
+    //                 }
+    //             }
+
+    //             // Reset times for the next day
+    //             $startTime->setTime(8, 0);
+    //             $endTime->setTime(9, 0);
+    //             $currentDate->modify('+1 day'); // Move to the next day
+    //         }
+
+    //         return true;
+    //     } catch (PDOException $e) {
+    //         // Echo a <script> tag with JavaScript that uses console.log
+    //         echo "Error generating schedule: " . $e->getMessage();
+    //         return false;
+    //     }
+    // }
+    public function generateMonthlySchedule($classId)
+    {
+        try {
+            // Start transaction
+            $this->db->beginTransaction();
+
+            // Delete existing schedule records for this class
+            $deleteStmt = $this->db->prepare("DELETE FROM schedule WHERE class_id = :classId");
+            $deleteStmt->bindParam(':classId', $classId, PDO::PARAM_INT);
+            $deleteStmt->execute();
+
+            // Fetch courses assigned to the class
+            $stmt = $this->db->prepare("SELECT course_id FROM class_course WHERE class_id = :classId");
+            $stmt->bindParam(':classId', $classId, PDO::PARAM_INT);
+            $stmt->execute();
+            $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($courses)) {
+                $this->db->rollBack(); // Roll back transaction if no courses found
+                return false; // No courses found for the class
+            }
+
+            // Define start times
+            $startTime = new DateTime('08:00 AM');
+            $endTime = clone $startTime;
+            $endTime->modify('+1 hour');
+
+            // Generate schedule for one month
+            $currentDate = new DateTime(); // Today
+            $endDate = clone $currentDate;
+            $endDate->modify('+1 month'); // One month from today
+
+            while ($currentDate < $endDate) {
+                $dayOfWeek = $currentDate->format('l'); // 'Monday', 'Tuesday', etc.
+                if ($dayOfWeek !== 'Saturday' && $dayOfWeek !== 'Sunday') { // Skip weekends
+                    foreach ($courses as $index => $course) {
+                        if ($index >= 6) break; // Max 6 sessions per day
+
+                        // Insert session into the database
+                        $insertStmt = $this->db->prepare("INSERT INTO schedule (class_id, course_id, day, start_time, end_time) VALUES (:classId, :courseId, :day, :startTime, :endTime)");
+                        $insertStmt->bindParam(':classId', $classId);
+                        $insertStmt->bindParam(':courseId', $course['course_id']);
+                        $insertStmt->bindParam(':day', $currentDate->format('Y-m-d'));
+                        $insertStmt->bindParam(':startTime', $startTime->format('H:i:s'));
+                        $insertStmt->bindParam(':endTime', $endTime->format('H:i:s'));
+                        $insertStmt->execute();
+
+                        // Update start and end times for the next session
+                        $startTime->modify('+1 hour');
+                        $endTime->modify('+1 hour');
+                    }
+                }
+
+                // Reset times for the next day
+                $startTime->setTime(8, 0);
+                $endTime->setTime(9, 0);
+                $currentDate->modify('+1 day'); // Move to the next day
+            }
+
+            $this->db->commit(); // Commit transaction
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack(); // Roll back the transaction on error
+            echo "Error generating schedule: " . $e->getMessage();
+            return false;
+        }
+    }
+    public function getScheduleByClassId($classId)
+    {
+        try {
+            // Prepare the SQL statement
+            $stmt = $this->db->prepare("SELECT s.id, s.day, s.start_time, s.end_time, c.name as course_name 
+                                        FROM schedule s 
+                                        JOIN course c ON s.course_id = c.id 
+                                        WHERE s.class_id = :classId 
+                                        ORDER BY s.day, s.start_time");
+            $stmt->bindParam(':classId', $classId, PDO::PARAM_INT);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Format the results for FullCalendar
+            $events = array_map(function ($item) {
+                return [
+                    'id' => $item['id'],
+                    'title' => $item['course_name'], // use course name as the title
+                    'start' => $item['day'] . 'T' . $item['start_time'], // Combine date and time for full ISO8601 string
+                    'end' => $item['day'] . 'T' . $item['end_time'],
+                    'className' => 'bg-info' // Optional: you can use different classes for styling
+                ];
+            }, $results);
+
+            return $events;
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error fetching schedule: " . $e->getMessage());
+            return [];
+        }
+    }
 }

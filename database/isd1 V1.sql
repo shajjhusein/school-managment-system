@@ -179,13 +179,15 @@ CREATE TABLE student_quiz (
 -- --------------------------------------------------------
 
 --
--- Table structure for table teach_a
+-- Table structure for table Instructor_courses
 --
 
-CREATE TABLE teach_a (
+CREATE TABLE Instructor_courses (
+  id int(11) NOT NULL AUTO_INCREMENT,
   user_id int(100) NOT NULL,
   course_id int(100) NOT NULL,
-  class_id int(100) NOT NULL
+  class_id int(100) NOT NULL,
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
