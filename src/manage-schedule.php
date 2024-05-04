@@ -62,7 +62,7 @@ $classe_name = $class["name"];  // Assume this method fetches all classes from y
             return;
         }
 
-        fetch(`get_courses.php?generate_schedule_class_id=${classId}`)
+        fetch(`get_http_data.php?generate_schedule_class_id=${classId}`)
             .then(data => {
                 updateScheduleTable(classId);
                 // Process the data here, e.g., display it in a table or process further
@@ -91,7 +91,7 @@ $classe_name = $class["name"];  // Assume this method fetches all classes from y
             return;
         }
 
-        fetch(`get_courses.php?generate_schedule_class_id_details=${classId}`)
+        fetch(`get_http_data.php?generate_schedule_class_id_details=${classId}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data)
