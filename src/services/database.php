@@ -575,4 +575,86 @@ class DatabaseService
             return [];
         }
     }
+    public function getScheduleByUserId($userId)
+    {
+        try {
+            // Prepare SQL statement to fetch class IDs associated with the user
+            $stmt = $this->db->prepare("SELECT class_id FROM studentClass WHERE user_id = :userId");
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $classIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Initialize an empty array to store the schedule
+            $events = [];
+
+            // Iterate through each class to fetch its schedule
+            foreach ($classIds as $classId) {
+                // Fetch the schedule for the class
+                $classSchedule = $this->getScheduleByClassId($classId);
+
+                // Merge the class schedule with the main schedule array
+                $events = array_merge($events, $classSchedule);
+            }
+
+            // Sort the events by start time
+            usort($events, function ($a, $b) {
+                return strcmp($a['start'], $b['start']);
+            });
+
+            return $events;
+        } catch (PDOException $e) {
+            // Handle exceptions
+            error_log("Error fetching schedule by user ID: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function fetchUserCourses($userId)
+    {
+        try {
+            // Prepare the SQL query to fetch user's courses
+            $stmt = $this->db->prepare("
+            SELECT c.id, c.name, c.description
+            FROM studentClass sc
+            INNER JOIN class_course cc ON sc.class_id = cc.class_id
+            INNER JOIN course c ON cc.course_id = c.id
+            WHERE sc.user_id = ?
+        ");
+
+            // Execute the query
+            $stmt->execute([$userId]);
+
+            // Fetch the results
+            $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $courses;
+        } catch (PDOException $e) {
+            // Handle PDO exceptions
+            echo "<script>console.error('PDO Exception: " . $e->getMessage() . "');</script>";
+            return [];
+        } catch (Exception $e) {
+            // Handle other exceptions
+            echo "<script>console.error('Exception: " . $e->getMessage() . "');</script>";
+            return [];
+        }
+    }
+    public function getUserClassNameByUserId($userId)
+    {
+        try {
+            // Prepare SQL statement to fetch the class name associated with the user
+            $stmt = $this->db->prepare("SELECT classe.name 
+                                    FROM studentClass 
+                                    JOIN classe ON studentClass.class_id = classe.id 
+                                    WHERE studentClass.user_id = :userId");
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $className = $stmt->fetchColumn();
+
+            return $className;
+        } catch (PDOException $e) {
+            // Handle exceptions
+            error_log("Error fetching user class name by user ID: " . $e->getMessage());
+            return null;
+        }
+    }
 }

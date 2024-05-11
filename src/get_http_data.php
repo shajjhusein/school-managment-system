@@ -12,7 +12,9 @@ $params = [
     'instructor_student_class_course_id' => $_GET['instructor_student_class_course_id'] ?? null,
     'instructor_student_class_class_id' => $_GET['instructor_student_class_class_id'] ?? null,
     'generate_schedule_class_id' => $_GET['generate_schedule_class_id'] ?? null,
-    'generate_schedule_class_id_details' => $_GET['generate_schedule_class_id_details'] ?? null
+    'generate_schedule_class_id_details' => $_GET['generate_schedule_class_id_details'] ?? null,
+    'generate_schedule_for_student' => $_GET['generate_schedule_for_student'] ?? null
+
 ];
 
 $result = [];
@@ -30,6 +32,8 @@ if ($params['class_id']) {
     $result = $databaseService->generateMonthlySchedule($params['generate_schedule_class_id']);
 } elseif ($params['generate_schedule_class_id_details']) {
     $result = $databaseService->getScheduleByClassId($params['generate_schedule_class_id_details']);
+} elseif ($params['generate_schedule_for_student']) {
+    $result = $databaseService->getScheduleByUserId($params['generate_schedule_for_student']);
 }
 
 // Output the result as JSON
