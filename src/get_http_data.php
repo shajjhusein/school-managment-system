@@ -13,7 +13,9 @@ $params = [
     'instructor_student_class_class_id' => $_GET['instructor_student_class_class_id'] ?? null,
     'generate_schedule_class_id' => $_GET['generate_schedule_class_id'] ?? null,
     'generate_schedule_class_id_details' => $_GET['generate_schedule_class_id_details'] ?? null,
-    'generate_schedule_for_student' => $_GET['generate_schedule_for_student'] ?? null
+    'generate_schedule_for_student' => $_GET['generate_schedule_for_student'] ?? null,
+    'course_id_quiz' => $_GET['course_id_quiz'] ?? null
+
 
 ];
 
@@ -34,6 +36,8 @@ if ($params['class_id']) {
     $result = $databaseService->getScheduleByClassId($params['generate_schedule_class_id_details']);
 } elseif ($params['generate_schedule_for_student']) {
     $result = $databaseService->getScheduleByUserId($params['generate_schedule_for_student']);
+} elseif ($params['course_id_quiz']) {
+    $result = $databaseService->fetchQuizzesForCourse($params['course_id_quiz']);
 }
 
 // Output the result as JSON

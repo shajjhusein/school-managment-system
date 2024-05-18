@@ -73,8 +73,8 @@ class DatabaseService
             $stmt = $this->db->prepare('SELECT users.*, classe.name AS class_name
             FROM users
             LEFT JOIN studentClass ON users.id = studentClass.user_id
-            LEFT JOIN classe ON classe.id = studentClass.class_id;
-             WHERE users.role = ?');
+            LEFT JOIN classe ON classe.id = studentClass.class_id
+             WHERE users.role = ?;');
             // Execute the prepared statement with the provided role
             $stmt->execute([$role]);
         }
@@ -117,7 +117,29 @@ class DatabaseService
             return false; // Return false if the user insertion failed
         }
     }
+    public function addQuiz($dueDate, $content, $courseId)
+    {
+        try {
+            // Get the current date
+            $currentDate = date('Y-m-d H:i:s');
 
+            // Prepare the SQL statement to insert quiz data
+            $stmt = $this->db->prepare("INSERT INTO quizzes_assignments (date_posted, due_date, content, course_id) VALUES (?, ?, ?, ?)");
+
+            // Execute quiz insertion
+            $success = $stmt->execute([$currentDate, $dueDate, $content, $courseId]);
+
+            if ($success) {
+                return true; // Return true indicating the overall process was successful
+            } else {
+                return false; // Return false if the quiz insertion failed
+            }
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error adding quiz: " . $e->getMessage());
+            return false; // Return false if an error occurred during the database operation
+        }
+    }
     public function getClasses()
     {
         // Prepare the SQL statement to retrieve users based on their specific role
@@ -129,6 +151,27 @@ class DatabaseService
 
         // Return the array of classes
         return $classes;
+    }
+
+    public function getInstructorClassesByUserId($userId)
+    {
+        try {
+            // Prepare the SQL statement
+            $stmt = $this->db->prepare("SELECT DISTINCT c.id, c.name, c.section 
+                                    FROM class_course cc
+                                    JOIN classe c ON cc.class_id = c.id
+                                    JOIN Instructor_courses ic ON cc.course_id = ic.course_id
+                                    WHERE ic.user_id = :userId");
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $results;
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error fetching instructor classes: " . $e->getMessage());
+            return [];
+        }
     }
 
     public function getUserById($id)
@@ -575,6 +618,23 @@ class DatabaseService
             return [];
         }
     }
+    public function fetchQuizzesForCourse($courseId)
+    {
+        try {
+            // Prepare the SQL statement
+            $stmt = $this->db->prepare("SELECT * FROM quizzes_assignments WHERE course_id = ?");
+            $stmt->execute([$courseId]);
+            $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $quizzes;
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error fetching quizzes for course: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+
     public function getScheduleByUserId($userId)
     {
         try {

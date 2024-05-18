@@ -93,6 +93,12 @@ if (!$_SESSION['user'] || !isset($_SESSION['user'])) {
                     </a>
                 </li>
                 <li>
+                    <a href="instructor-management.php">
+                        <i class="mdi mdi-calendar-blank-outline"></i>
+                        <span> Instructor Management </span>
+                    </a>
+                </li>
+                <li>
                     <a href="apps-calendar.php">
                         <i class="mdi mdi-calendar-blank-outline"></i>
                         <span> Calendar </span>
