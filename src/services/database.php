@@ -633,7 +633,7 @@ class DatabaseService
             return [];
         }
     }
-    
+
 
     public function getScheduleByUserId($userId)
     {
@@ -715,6 +715,45 @@ class DatabaseService
             // Handle exceptions
             error_log("Error fetching user class name by user ID: " . $e->getMessage());
             return null;
+        }
+    }
+    public function fetchMaterialsForCourse($courseId)
+    {
+        try {
+            // Prepare the SQL statement
+            $stmt = $this->db->prepare("SELECT * FROM materials WHERE course_id = ?");
+            $stmt->execute([$courseId]);
+            $materials = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $materials;
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error fetching materials for course: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function addMaterial($content, $courseId)
+    {
+        try {
+            // Get the current date
+            $currentDate = date('Y-m-d H:i:s');
+
+            // Prepare the SQL statement to insert material data
+            $stmt = $this->db->prepare("INSERT INTO materials (content, cate_posted, course_id) VALUES (?, ?, ?)");
+
+            // Execute material insertion
+            $success = $stmt->execute([$content, $currentDate, $courseId]);
+
+            if ($success) {
+                return true; // Return true indicating the overall process was successful
+            } else {
+                return false; // Return false if the material insertion failed
+            }
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error adding material: " . $e->getMessage());
+            return false; // Return false if an error occurred during the database operation
         }
     }
 }
