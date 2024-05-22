@@ -86,17 +86,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
                             window.location.href = ' instructor-materials.php?course_id=' + course.id + '&class_id=' + classId;
 
                         };
-                        const manageStudentsButton = document.createElement('button');
-                        manageStudentsButton.textContent = 'Manage Students';
-                        manageStudentsButton.classList.add('btn', 'btn-success', 'edit-action');
-                        manageStudentsButton.onclick = function() {
-                            // Implement logic to manage quizzes
-                            fetchQuizzesForCourse(course.id);
-                        };
 
                         cellAction.appendChild(manageQuizButton);
                         cellAction.appendChild(manageMaterialsButton);
-                        cellAction.appendChild(manageStudentsButton);
 
 
 

@@ -240,6 +240,48 @@ class DatabaseService
             return false;
         }
     }
+    public function deleteQuize($id)
+    {
+        try {
+            // Prepare a DELETE statement
+            $stmt = $this->db->prepare("DELETE FROM quizzes_assignments WHERE id = ?");
+
+            // Execute the deletion
+            $stmt->execute([$id]);
+
+            // Check if the deletion was successful
+            if ($stmt->rowCount() > 0) {
+                // Optionally, you might want to handle related data deletions here
+                return true;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            // Handle any SQL errors
+            return false;
+        }
+    }
+    public function deleteMaterial($id)
+    {
+        try {
+            // Prepare a DELETE statement
+            $stmt = $this->db->prepare("DELETE FROM materials WHERE id = ?");
+
+            // Execute the deletion
+            $stmt->execute([$id]);
+
+            // Check if the deletion was successful
+            if ($stmt->rowCount() > 0) {
+                // Optionally, you might want to handle related data deletions here
+                return true;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            // Handle any SQL errors
+            return false;
+        }
+    }
     public function getClassById($id)
     {
         try {
@@ -754,6 +796,29 @@ class DatabaseService
             // Consider logging the error instead of displaying it
             error_log("Error adding material: " . $e->getMessage());
             return false; // Return false if an error occurred during the database operation
+        }
+    }
+    public function fetchUserCoursesWithMaterialsAndQuizzesAssignments($userId)
+    {
+        try {
+            // Fetch user's courses
+            $courses = $this->fetchUserCourses($userId);
+
+            // Loop through each course to fetch materials and quizzes_assignments
+            foreach ($courses as &$course) {
+                $course['materials'] = $this->fetchMaterialsForCourse($course['id']);
+                $course['quizzes_assignments'] = $this->fetchQuizzesForCourse($course['id']);
+            }
+
+            return $courses;
+        } catch (PDOException $e) {
+            // Handle PDO exceptions
+            echo "<script>console.error('PDO Exception: " . $e->getMessage() . "');</script>";
+            return [];
+        } catch (Exception $e) {
+            // Handle other exceptions
+            echo "<script>console.error('Exception: " . $e->getMessage() . "');</script>";
+            return [];
         }
     }
 }

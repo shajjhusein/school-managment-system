@@ -4,7 +4,6 @@ require_once('./services/database.php');
 
 $databaseService = DatabaseService::getInstance();
 
-
 // Redirect if user is not set or not logged in
 if (!isset($_SESSION['user'])) {
     header('Location: auth-login.php');
@@ -17,41 +16,21 @@ $instructor_id = $_SESSION['user']["id"];
 if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
     $course_id = $_GET['course_id'];
     $class_id = $_GET['class_id'];
-
     // Fetch quizzes for the specified class, course, and instructor
     $quizzes = $databaseService->fetchQuizzesForCourse($course_id);
 } else {
-    // Course_id and class_id not provided in the URL
-    echo json_encode(array('error' => 'Course_id and class_id are required parameters.'));
-    exit();
+    $course_id = 0; // Set a default value for course_id
+    $class_id = 0; // Set a default value for class_id
+    $quizzes = []; // Initialize quizzes as an empty array
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_quiz'])) {
-    // Process adding a new quiz here
-    $dueDate = $_POST['dueDate'];
-    $content = $_POST['content'];
-    $courseId = $_GET['course_id'];
-
-    // Call the addQuiz method to add the quiz
-    $result = $databaseService->addQuiz($dueDate, $content, $courseId);
-
-    if ($result) {
-        // Quiz added successfully
-        echo "Quiz added successfully.";
-    } else {
-        // Quiz addition failed
-        echo "Failed to add quiz.";
-    }
-}
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
 
-    <?php $title = "Manage Quizes";
+    <?php $title = "Manage Quizzes And Assignments";
     include 'partials/title-meta.php'; ?>
 
     <?php include 'partials/head-css.php'; ?>
@@ -72,41 +51,103 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_quiz'])) {
             padding: 10px;
         }
     </style>
-</head>
+    <script>
+        function handleDeleteQuiz(quizId) {
+            // Ask for confirmation before deleting the quiz
+            if (confirm("Are you sure you want to delete this quiz?")) {
+                const formData = new FormData(); // Create form data object
+                formData.append('action', 'delete_quiz'); // Set the action
+                formData.append('quiz_id', quizId); // Set the quiz ID
 
-<?php include 'partials/body.php'; ?>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('add_quiz_form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
+                // Send POST request to delete quiz
+                fetch('get_http_data.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json(); // Parse response as JSON
+                        }
+                        throw new Error('Network response was not ok.');
+                    })
+                    .then(data => {
+                        const row = document.getElementById(`quiz-${quizId}`);
+                        if (row) {
+                            row.remove();
+                        }
+                    })
+                    .catch(error => {
+                        // Handle error
+                        console.error('Error:', error);
+                        alert('Failed to delete quiz. Please try again.'); // Show error message
+                    });
+            }
+        }
 
-            // Get form data
-            const formData = new FormData(this);
-            // Add the 'add_quiz' parameter to the form data
-            formData.append('add_quiz', true);
-            // Send form data via AJAX
-            fetch('instructor-quizzes.php', {
+        function handleAddQuiz() {
+            // Gather data for the new quiz
+            const dueDate = document.getElementById('dueDate').value;
+            const content = document.getElementById('content').value;
+            const courseId = <?php echo json_encode($course_id); ?>; // Get the course_id from PHP
+            // Create FormData object
+            const formData = new FormData();
+            formData.append('action', 'add_quiz');
+            formData.append('dueDate', dueDate);
+            formData.append('content', content);
+            formData.append('course_id', courseId);
+
+
+            // Send POST request to add quiz
+            fetch('get_http_data.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Parse response as JSON
+                    }
+                    throw new Error('Network response was not ok.');
+                })
                 .then(data => {
-                    debugger
-                    // Display response message
+                    // Handle success response
                     console.log(data); // Log response to console
-                    // fetchQuizzesForCourse(formData.get('course'))
+
+                    // Update the table to display the new quiz
+                    const quizTableBody = document.getElementById('quizTableBody');
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                <td>${data.id}</td>
+                <td>${data.date_posted || 'N/A'}</td>
+                <td>${dueDate}</td>
+                <td>${content}</td>
+                <td>
+                    <button class="btn btn-danger delete-btn" onclick="handleDeleteQuiz(${data.id})">Delete</button>
+                </td>
+            `;
+                    quizTableBody.appendChild(newRow);
+
+                    // Clear input fields
+                    document.getElementById('dueDate').value = '';
+                    document.getElementById('content').value = '';
+
                 })
                 .catch(error => {
+                    // Handle error
                     console.error('Error:', error);
                     alert('Failed to add quiz. Please try again.'); // Show error message
                 });
-        });
-    });
-</script>
+        }
+    </script>
+
+
+
+</head>
+
+<?php include 'partials/body.php'; ?>
 <!-- Begin page -->
 <div id="wrapper">
 
-    <?php $pagetitle = "Manage Quizes";
+    <?php $pagetitle = "Manage Quizzes And Assignments";
     include 'partials/menu.php'; ?>
     <!-- third party css -->
     <link href="assets/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
@@ -141,7 +182,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_quiz'])) {
                                             <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary waves-effect waves-light">
+                                    <button type="submit" class="btn btn-primary waves-effect waves-light" onclick="handleAddQuiz()">
                                         Add Quiz
                                     </button>
                                 </form>
@@ -169,14 +210,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_quiz'])) {
                                     </thead>
                                     <tbody id="quizTableBody">
                                         <?php foreach ($quizzes as $quiz) : ?>
-                                            <tr>
+                                            <tr id="quiz-<?php echo $quiz['id']; ?>">
                                                 <td><?php echo $quiz['id']; ?></td>
                                                 <td><?php echo isset($quiz['date_posted']) ? $quiz['date_posted'] : 'N/A'; ?></td>
                                                 <td><?php echo $quiz['due_date']; ?></td>
                                                 <td><?php echo $quiz['content']; ?></td>
                                                 <td>
-                                                    <button class="btn btn-primary btn-sm">Edit</button>
-                                                    <button class="btn btn-danger btn-sm">Delete</button>
+                                                    <button class="btn btn-danger delete-btn" onclick="handleDeleteQuiz(<?php echo $quiz['id']; ?>)">Delete</button>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

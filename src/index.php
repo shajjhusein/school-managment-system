@@ -15,6 +15,8 @@ $userClass = $databaseService->getUserClassNameByUserId($user['id']);
 // Fetch user's courses from the database
 // Assuming you have a method to fetch user's courses from the database
 $userCourses = $databaseService->fetchUserCourses($user['id']);
+$userCoursesWithMaterialsAndQuizzesAssignments = $databaseService->fetchUserCoursesWithMaterialsAndQuizzesAssignments($user['id']);
+
 ?>
 
 <!DOCTYPE html>
@@ -62,24 +64,7 @@ $userCourses = $databaseService->fetchUserCourses($user['id']);
                     <div class="col-xl-8">
                         <div class="card">
                             <div class="card-body">
-                                <div class="dropdown float-end">
-                                    <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="mdi mdi-dots-vertical"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-end">
-                                        <!-- item-->
-                                        <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                                        <!-- item-->
-                                        <a href="javascript:void(0);" class="dropdown-item">Another action</a>
-                                        <!-- item-->
-                                        <a href="javascript:void(0);" class="dropdown-item">Something else</a>
-                                        <!-- item-->
-                                        <a href="javascript:void(0);" class="dropdown-item">Separated link</a>
-                                    </div>
-                                </div>
-
                                 <h4 class="header-title mt-0 mb-3">Courses</h4>
-
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0">
                                         <thead>
@@ -184,62 +169,126 @@ $userCourses = $databaseService->fetchUserCourses($user['id']);
                     </div>
                     <!-- end col-12 -->
                 </div> <!-- end row -->
-            </div> <!-- container-fluid -->
+                <div class="row">
+                    <div class="row">
+                        <?php foreach ($userCoursesWithMaterialsAndQuizzesAssignments as $course) : ?>
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title mt-0 mb-3">Quizzes For Course : <?php echo htmlspecialchars($course['name']); ?></h4>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Name</th>
+                                                        <th>Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($course['quizzes_assignments'] as $quiz) : ?>
+                                                        <tr id="quiz-<?php echo $quiz['id']; ?>">
+                                                            <td><?php echo $quiz['id']; ?></td>
+                                                            <td><?php echo isset($quiz['date_posted']) ? $quiz['date_posted'] : 'N/A'; ?></td>
+                                                            <td><?php echo $quiz['due_date']; ?></td>
+                                                            <td><?php echo $quiz['content']; ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
 
-        </div> <!-- content -->
+                            </div><!-- end col -->
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title mt-0 mb-3">Materials For Course : <?php echo htmlspecialchars($course['name']); ?></h4>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Name</th>
+                                                        <th>Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($course['materials'] as $material) : ?>
+                                                        <tr id="material-<?php echo $material['id']; ?>">
+                                                            <td><?php echo $material['id']; ?></td>
+                                                            <td><?php echo isset($material['cate_posted']) ? $material['cate_posted'] : 'N/A'; ?></td>
+                                                            <td><?php echo $material['content']; ?></td>
 
-        <?php include 'partials/footer.php'; ?>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div><!-- end col -->
+
+                        <?php endforeach; ?>
+                    </div>
+                </div> <!-- container-fluid -->
+
+            </div> <!-- content -->
+
+            <?php include 'partials/footer.php'; ?>
+
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+
 
     </div>
-    <!-- ============================================================== -->
-    <!-- End Page content -->
-    <!-- ============================================================== -->
+    <!-- END wrapper -->
+
+    <?php include 'partials/right-sidebar.php'; ?>
+
+    <?php include 'partials/footer-scripts.php'; ?>
+
+    <!-- knob plugin -->
+    <script src="assets/libs/jquery-knob/jquery.knob.min.js"></script>
+
+    <!--Morris Chart-->
+    <script src="assets/libs/morris.js06/morris.min.js"></script>
+    <script src="assets/libs/raphael/raphael.min.js"></script>
+
+    <!-- Dashboar init js-->
+    <script src="assets/js/pages/dashboard.init.js"></script>
 
 
-</div>
-<!-- END wrapper -->
+    <!-- plugin js -->
+    <script src="assets/libs/moment/min/moment.min.js"></script>
+    <script src="assets/libs/fullcalendar/main.min.js"></script>
 
-<?php include 'partials/right-sidebar.php'; ?>
+    <!-- Calendar init -->
+    <script src="assets/js/pages/calendar.init.js"></script>
 
-<?php include 'partials/footer-scripts.php'; ?>
+    <!-- App js-->
+    <script src="assets/js/app.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('sadek')
+            fetch(`get_http_data.php?generate_schedule_for_student=${<?php echo $user['id']; ?>}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    const schedule = data;
+                    window.jQuery.CalendarApp.init(schedule);
+                })
+                .catch(error => {
+                    console.error('Error fetching schedule:', error);
+                    alert('Failed to fetch schedule: ' + error.message);
+                });
 
-<!-- knob plugin -->
-<script src="assets/libs/jquery-knob/jquery.knob.min.js"></script>
-
-<!--Morris Chart-->
-<script src="assets/libs/morris.js06/morris.min.js"></script>
-<script src="assets/libs/raphael/raphael.min.js"></script>
-
-<!-- Dashboar init js-->
-<script src="assets/js/pages/dashboard.init.js"></script>
-
-
-<!-- plugin js -->
-<script src="assets/libs/moment/min/moment.min.js"></script>
-<script src="assets/libs/fullcalendar/main.min.js"></script>
-
-<!-- Calendar init -->
-<script src="assets/js/pages/calendar.init.js"></script>
-
-<!-- App js-->
-<script src="assets/js/app.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('sadek')
-        fetch(`get_http_data.php?generate_schedule_for_student=${<?php echo $user['id']; ?>}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
-                const schedule = data;
-                window.jQuery.CalendarApp.init(schedule);
-            })
-            .catch(error => {
-                console.error('Error fetching schedule:', error);
-                alert('Failed to fetch schedule: ' + error.message);
-            });
-
-    });
-</script>
-</body>
+        });
+    </script>
+    </body>
 
 </html>
