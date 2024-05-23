@@ -506,62 +506,7 @@ class DatabaseService
             return false;
         }
     }
-    // public function generateMonthlySchedule($classId)
-    // {
-    //     try {
-    //         // Fetch courses assigned to the class
-    //         $stmt = $this->db->prepare("SELECT course_id FROM class_course WHERE class_id = :classId");
-    //         $stmt->bindParam(':classId', $classId, PDO::PARAM_INT);
-    //         $stmt->execute();
-    //         $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    //         if (empty($courses)) {
-    //             return false; // No courses found for the class
-    //         }
 
-    //         // Define start times
-    //         $startTime = new DateTime('08:00 AM');
-    //         $endTime = clone $startTime;
-    //         $endTime->modify('+1 hour');
-
-    //         // Generate schedule for one month
-    //         $currentDate = new DateTime(); // Today
-    //         $endDate = clone $currentDate;
-    //         $endDate->modify('+1 month'); // One month from today
-
-    //         while ($currentDate < $endDate) {
-    //             $dayOfWeek = $currentDate->format('l'); // 'Monday', 'Tuesday', etc.
-    //             if ($dayOfWeek !== 'Saturday' && $dayOfWeek !== 'Sunday') { // Skip weekends
-    //                 foreach ($courses as $index => $course) {
-    //                     if ($index >= 6) break; // Max 6 sessions per day
-
-    //                     // Insert session into the database
-    //                     $insertStmt = $this->db->prepare("INSERT INTO schedule (class_id, course_id, day, start_time, end_time) VALUES (:classId, :courseId, :day, :startTime, :endTime)");
-    //                     $insertStmt->bindParam(':classId', $classId);
-    //                     $insertStmt->bindParam(':courseId', $course['course_id']);
-    //                     $insertStmt->bindParam(':day', $currentDate->format('Y-m-d'));
-    //                     $insertStmt->bindParam(':startTime', $startTime->format('H:i:s'));
-    //                     $insertStmt->bindParam(':endTime', $endTime->format('H:i:s'));
-    //                     $insertStmt->execute();
-
-    //                     // Update start and end times for the next session
-    //                     $startTime->modify('+1 hour');
-    //                     $endTime->modify('+1 hour');
-    //                 }
-    //             }
-
-    //             // Reset times for the next day
-    //             $startTime->setTime(8, 0);
-    //             $endTime->setTime(9, 0);
-    //             $currentDate->modify('+1 day'); // Move to the next day
-    //         }
-
-    //         return true;
-    //     } catch (PDOException $e) {
-    //         // Echo a <script> tag with JavaScript that uses console.log
-    //         echo "Error generating schedule: " . $e->getMessage();
-    //         return false;
-    //     }
-    // }
     public function generateMonthlySchedule($classId)
     {
         try {
