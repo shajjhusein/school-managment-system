@@ -2,13 +2,20 @@
 include 'services/session.php';
 require_once('./services/database.php');
 
+
+// Redirect if user is not set or not logged in
+if (!isset($_SESSION['user'])) {
+    header('Location: auth-login.php');
+    exit();
+}
+
 // Attempt to get user ID from URL
 $user_id = isset($_GET['id']) ? intval($_GET['id']) : null;
 $current_user = null;
 
 $databaseService = DatabaseService::getInstance();
 $classes = $databaseService->getClasses();
-
+$isMyAccount = ($user_id && $user_id == $_SESSION['user']['id']);
 // Check if we are updating an existing user
 if ($user_id) {
     $current_user = $databaseService->getUserById($user_id);
@@ -49,7 +56,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     include 'partials/title-meta.php'; ?>
 
     <?php include 'partials/head-css.php'; ?>
+    <style>
+        .disable-event {
+            pointer-events: none;
+        }
 
+        .hide-action {
+            display: none;
+        }
+    </style>
 </head>
 
 <?php include 'partials/body.php'; ?>
@@ -73,7 +88,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!-- Begin page -->
 <div id="wrapper">
 
-    <?php $pagetitle = "Add User";
+    <?php
+    $pagetitle = $isMyAccount ? "My Account" : $user_id = null ? "Add User" : "Edit User";
     include 'partials/menu.php'; ?>
 
     <!-- ============================================================== -->
@@ -92,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="card">
                             <div class="card-body">
 
-                                <form method="post">
+                                <form method="post" <?php echo $isMyAccount ? 'class="disable-event"' : ''; ?>>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="name" class="form-label">Name</label>
@@ -130,7 +146,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             </select>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary waves-effect waves-light">
+                                    <button type="submit" class="btn btn-primary waves-effect waves-light <?php echo $isMyAccount ? 'hide-action' : ''; ?>">
+
                                         <?php echo $user_id ? 'Edit' : 'Add'; ?>
                                     </button>
                                 </form>

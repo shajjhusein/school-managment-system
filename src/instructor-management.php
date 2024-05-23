@@ -14,12 +14,6 @@ $user = $_SESSION['user'];
 $instructor_id = $_SESSION['user']["id"];
 $classes = $databaseService->getInstructorClassesByUserId($instructor_id);  // Assume this method fetches all classes from your database
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
-    // Process course assignment to instructor here
-    $selectedClassId = $_POST['class_id'];
-    $selectedCourseId = $_POST['course_id'];
-    $result = $databaseService->assignCourseToInstructor($instructor_id, $selectedCourseId, $selectedClassId);
-}
 ?>
 
 
@@ -99,83 +93,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
             tableBody.innerHTML = ''; // Clear existing rows
         }
     }
-
-
-    function fetchQuizzesForCourse(courseId) {
-        // AJAX call to fetch quizzes for the selected course
-        fetch('get_http_data.php?course_id_quiz=' + courseId)
-            .then(response => response.json())
-            .then(data => {
-                // Display quizzes in a table
-                const quizTableBody = document.getElementById('quizTableBody');
-                quizTableBody.innerHTML = ''; // Clear existing rows
-
-                data.forEach(quiz => {
-                    const row = quizTableBody.insertRow();
-                    const cellId = row.insertCell(0);
-                    const cellDatePosted = row.insertCell(1);
-                    const cellDueDate = row.insertCell(2);
-                    const cellContent = row.insertCell(3);
-                    const cellActions = row.insertCell(4);
-
-                    cellId.textContent = quiz.id;
-                    cellDatePosted.textContent = quiz.date_posted;
-                    cellDueDate.textContent = quiz.due_date;
-                    cellContent.textContent = quiz.content;
-
-                    // Add action buttons for editing and deleting quizzes
-
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
-                    // Add click event listener for deleting quiz
-                    deleteButton.onclick = function() {
-                        deleteQuiz(quiz.id);
-                    };
-
-                    cellActions.appendChild(deleteButton);
-                });
-            })
-            .catch(error => console.error('Error fetching quizzes:', error));
-    }
-
-
-
-    function loadInstructorStudentsByClass(classId, instructorId) {
-        if (classId) {
-            // AJAX call to fetch courses for a given class
-            fetch('get_http_data.php?instructor_student_class_id=' + classId + '&instructor_id=' +
-                    instructorId)
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.getElementById('studentsTableBody');
-                    tableBody.innerHTML = ''; // Clear existing rows
-
-                    data.forEach(course => {
-                        const row = tableBody.insertRow();
-                        const cellId = row.insertCell(0);
-                        const cellName = row.insertCell(1);
-                        const cellEmail = row.insertCell(2);
-                        cellId.textContent = course.id;
-                        cellName.textContent = course.name;
-                        cellEmail.textContent = course.email
-                    });
-                }).catch(error => console.error('Error loading student:', error));
-            fetch('get_http_data.php?class_id=' + classId)
-                .then(response => response.json())
-                .then(data => {
-                    let courseSelect = document.getElementById('student_course');
-                    courseSelect.innerHTML = '<option value="">Select a Course</option>'; // Reset dropdown
-                    data.forEach(function(course) {
-                        let option = new Option(course.name, course.id);
-                        courseSelect.add(option);
-                    });
-                }).catch(error => console.error('Error loading courses:', error));
-        } else {
-            const tableBody = document.getElementById('studentsTableBody');
-            tableBody.innerHTML = ''; // Clear existing rows
+    // Function to set the first option as selected if the list of classes is not empty
+    function setFirstOptionSelected() {
+        const classSelect = document.getElementById('class');
+        if (classSelect.options.length > 0) {
+            classSelect.selectedIndex = 0;
+            const firstClassId = classSelect.options[1].value;
+            loadInstructorCourses(firstClassId, <?php echo $instructor_id; ?>);
+            classSelect.selectedIndex = 1; // Select the first option
         }
     }
+    // Call the function when the page is loaded
+    document.addEventListener('DOMContentLoaded', setFirstOptionSelected);
 </script>
 <!-- Begin page -->
 <div id="wrapper">

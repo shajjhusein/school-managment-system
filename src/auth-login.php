@@ -11,7 +11,25 @@ if (isset($_POST['email'])) {
         $_POST['password'] = null;
     } else {
         if (checkAuth($email, $password) === true) {
-            header('Location: index.php');
+            // Get the user's role from the session
+            $role = $_SESSION['user']['role'];
+            // Redirect based on the user's role
+            switch ($role) {
+                case 'student':
+                    header('Location: index.php');
+                    break;
+                case 'supervisor':
+                case 'director':
+                    header('Location: users.php');
+                    break;
+                case 'instructor':
+                    header('Location: instructor-management.php');
+                    break;
+                default:
+                    // Redirect to a default page if the role is not recognized
+                    header('Location: index.php');
+                    break;
+            }
             die();
         } else {
             $_SESSION['error'] = "Email or Password is not valid";

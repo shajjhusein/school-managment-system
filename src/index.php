@@ -175,7 +175,7 @@ $userCoursesWithMaterialsAndQuizzesAssignments = $databaseService->fetchUserCour
                             <div class="col-xl-6">
                                 <div class="card">
                                     <div class="card-body">
-                                        <h4 class="header-title mt-0 mb-3">Quizzes For Course : <?php echo htmlspecialchars($course['name']); ?></h4>
+                                        <h4 class="header-title mt-0 mb-3">Quizzes - Assignments For Course : <?php echo htmlspecialchars($course['name']); ?></h4>
                                         <div class="table-responsive">
                                             <table class="table table-hover mb-0">
                                                 <thead>
