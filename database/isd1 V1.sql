@@ -170,9 +170,11 @@ CREATE TABLE schedule (
 --
 
 CREATE TABLE student_quiz (
+  id int(11) NOT NULL AUTO_INCREMENT,
   user_id int(100) NOT NULL,
   quiz_id int(100) NOT NULL,
-  grade int(10) NOT NULL
+  grade int(10) NOT NULL,
+   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

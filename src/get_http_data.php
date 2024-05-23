@@ -14,7 +14,8 @@ $getParams = [
     'generate_schedule_class_id' => $_GET['generate_schedule_class_id'] ?? null,
     'generate_schedule_class_id_details' => $_GET['generate_schedule_class_id_details'] ?? null,
     'generate_schedule_for_student' => $_GET['generate_schedule_for_student'] ?? null,
-    'course_id_quiz' => $_GET['course_id_quiz'] ?? null
+    'course_id_quiz' => $_GET['course_id_quiz'] ?? null,
+    'fetch_user_quiz_grades' => $_GET['fetch_user_quiz_grades'] ?? null
 ];
 
 // Gather all possible POST parameters
@@ -39,6 +40,8 @@ if ($getParams['class_id']) {
     $result = $databaseService->getScheduleByUserId($getParams['generate_schedule_for_student']);
 } elseif ($getParams['course_id_quiz']) {
     $result = $databaseService->fetchQuizzesForCourse($getParams['course_id_quiz']);
+} elseif ($getParams['fetch_user_quiz_grades']) {
+    $result = $databaseService->fetchStudentQuizzes($getParams['fetch_user_quiz_grades']);
 } elseif ($postParams['action'] ?? null) {
     // Handle POST actions
     switch ($postParams['action']) {
@@ -76,6 +79,16 @@ if ($getParams['class_id']) {
                 $result = $databaseService->addMaterial($content, $courseId);
             } else {
                 $result = ['error' => 'Missing required parameters for adding a quiz'];
+            }
+            break;
+        case 'add_student_quiz':
+            if (isset($postParams['user_id']) && isset($postParams['quiz_id']) && isset($postParams['grade'])) {
+                $userId = $postParams['user_id'];
+                $quizId = $postParams['quiz_id'];
+                $grade = $postParams['grade'];
+                $result = $databaseService->addStudentQuiz($userId, $quizId, $grade);
+            } else {
+                $result = ['error' => 'Missing required parameters for adding a student quiz'];
             }
             break;
         default:

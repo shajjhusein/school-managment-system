@@ -766,4 +766,107 @@ class DatabaseService
             return [];
         }
     }
+    public function fetchStudentsForCourse($courseId)
+    {
+        try {
+            // Prepare the SQL query to fetch students for the given course
+            $stmt = $this->db->prepare("
+            SELECT u.id, u.name, u.email ,u.date_of_birth
+            FROM users u
+            INNER JOIN studentClass sc ON u.id = sc.user_id
+            INNER JOIN class_course cc ON sc.class_id = cc.class_id
+            WHERE cc.course_id = ? AND u.role = 'student'
+        ");
+
+            // Execute the query with the provided course ID
+            $stmt->execute([$courseId]);
+
+            // Fetch the results
+            $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $students;
+        } catch (PDOException $e) {
+            // Handle PDO exceptions
+            echo "<script>console.error('PDO Exception: " . $e->getMessage() . "');</script>";
+            return [];
+        } catch (Exception $e) {
+            // Handle other exceptions
+            echo "<script>console.error('Exception: " . $e->getMessage() . "');</script>";
+            return [];
+        }
+    }
+    public function addStudentQuiz($userId, $quizId, $grade)
+    {
+        try {
+            // Prepare the SQL statement
+            $stmt = $this->db->prepare("INSERT INTO student_quiz (user_id, quiz_id, grade) VALUES (?, ?, ?)");
+
+            // Execute the statement with the provided data
+            $stmt->execute([$userId, $quizId, $grade]);
+
+            // Check if the insertion was successful
+            if ($stmt->rowCount() > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error adding student quiz: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function fetchStudentQuizzes($userId)
+    {
+        try {
+            // Prepare the SQL statement
+            $stmt = $this->db->prepare("
+            SELECT 
+                sq.id AS student_quiz_id, 
+                qa.id AS quiz_id, 
+                qa.content AS quiz_content, 
+                sq.grade
+            FROM 
+                student_quiz sq
+            JOIN 
+                quizzes_assignments qa ON sq.quiz_id = qa.id
+            WHERE 
+                sq.user_id = ?
+        ");
+            // Execute the statement with the user ID
+            $stmt->execute([$userId]);
+            // Fetch all results
+            $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $quizzes;
+        } catch (PDOException $e) {
+            // Consider logging the error instead of displaying it
+            error_log("Error fetching student quizzes: " . $e->getMessage());
+            return []; // Return an empty array if an error occurred
+        }
+    }
+    public function fetchStudentGrades($userId)
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    qa.content AS quiz_content, 
+                    sq.grade, 
+                    c.name AS course_name 
+                FROM 
+                    student_quiz sq
+                JOIN 
+                    quizzes_assignments qa ON sq.quiz_id = qa.id
+                JOIN 
+                    course c ON qa.course_id = c.id
+                WHERE 
+                    sq.user_id = ?
+            ");
+            $stmt->execute([$userId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error fetching student grades: " . $e->getMessage());
+            return [];
+        }
+    }
 }

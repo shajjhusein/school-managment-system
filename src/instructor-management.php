@@ -16,7 +16,6 @@ $classes = $databaseService->getInstructorClassesByUserId($instructor_id);  // A
 
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -80,9 +79,19 @@ $classes = $databaseService->getInstructorClassesByUserId($instructor_id);  // A
                             window.location.href = ' instructor-materials.php?course_id=' + course.id + '&class_id=' + classId;
 
                         };
+                        const manageStudentsButton = document.createElement('button');
+                        manageStudentsButton.textContent = 'Manage Students';
+                        manageStudentsButton.classList.add('btn', 'btn-success', 'edit-action');
+                        manageStudentsButton.onclick = function() {
+
+                            window.location.href = ' instructor-students.php?course_id=' + course.id + '&class_id=' + classId;
+
+                        };
 
                         cellAction.appendChild(manageQuizButton);
                         cellAction.appendChild(manageMaterialsButton);
+                        cellAction.appendChild(manageStudentsButton);
+
 
 
 

@@ -17,6 +17,8 @@ $userClass = $databaseService->getUserClassNameByUserId($user['id']);
 $userCourses = $databaseService->fetchUserCourses($user['id']);
 $userCoursesWithMaterialsAndQuizzesAssignments = $databaseService->fetchUserCoursesWithMaterialsAndQuizzesAssignments($user['id']);
 
+// Fetch student's grades
+$studentGrades = $databaseService->fetchStudentGrades($user['id']);
 ?>
 
 <!DOCTYPE html>
@@ -233,8 +235,39 @@ $userCoursesWithMaterialsAndQuizzesAssignments = $databaseService->fetchUserCour
 
                         <?php endforeach; ?>
                     </div>
-                </div> <!-- container-fluid -->
 
+                </div> <!-- container-fluid -->
+                <!-- Grades Table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="header-title mt-0 mb-3">My Grades</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Course Name</th>
+                                                <th>Quiz Content</th>
+                                                <th>Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($studentGrades as $grade) : ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($grade['course_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($grade['quiz_content']); ?></td>
+                                                    <td><?php echo htmlspecialchars($grade['grade']); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- end col -->
+                </div>
+                <!-- end row -->
             </div> <!-- content -->
 
             <?php include 'partials/footer.php'; ?>
@@ -274,7 +307,6 @@ $userCoursesWithMaterialsAndQuizzesAssignments = $databaseService->fetchUserCour
     <script src="assets/js/app.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('sadek')
             fetch(`get_http_data.php?generate_schedule_for_student=${<?php echo $user['id']; ?>}`)
                 .then(response => response.json())
                 .then(data => {
