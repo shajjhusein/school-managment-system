@@ -15,7 +15,9 @@ $getParams = [
     'generate_schedule_class_id_details' => $_GET['generate_schedule_class_id_details'] ?? null,
     'generate_schedule_for_student' => $_GET['generate_schedule_for_student'] ?? null,
     'course_id_quiz' => $_GET['course_id_quiz'] ?? null,
-    'fetch_user_quiz_grades' => $_GET['fetch_user_quiz_grades'] ?? null
+    'fetch_user_quiz_grades' => $_GET['fetch_user_quiz_grades'] ?? null,
+    'get_supervisor_classes_by_id' => $_GET['get_supervisor_classes_by_id'] ?? null
+
 ];
 
 // Gather all possible POST parameters
@@ -42,6 +44,8 @@ if ($getParams['class_id']) {
     $result = $databaseService->fetchQuizzesForCourse($getParams['course_id_quiz']);
 } elseif ($getParams['fetch_user_quiz_grades']) {
     $result = $databaseService->fetchStudentQuizzes($getParams['fetch_user_quiz_grades']);
+} elseif ($getParams['get_supervisor_classes_by_id']) {
+    $result = $databaseService->getSupervisorClasses($getParams['get_supervisor_classes_by_id']);
 } elseif ($postParams['action'] ?? null) {
     // Handle POST actions
     switch ($postParams['action']) {
@@ -89,6 +93,13 @@ if ($getParams['class_id']) {
                 $result = $databaseService->addStudentQuiz($userId, $quizId, $grade);
             } else {
                 $result = ['error' => 'Missing required parameters for adding a student quiz'];
+            }
+            break;
+        case 'delete_supervisor_class':
+            if (isset($postParams['id'])) {
+                $result = $databaseService->deleteSupervisorClass($postParams['id']);
+            } else {
+                $result = ['error' => 'Missing id parameter'];
             }
             break;
         default:

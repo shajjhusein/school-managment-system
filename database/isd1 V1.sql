@@ -69,7 +69,6 @@ CREATE TABLE classe (
   id int(100) NOT NULL ,
   name varchar(30) NOT NULL,
   section varchar(10) NOT NULL,
-  user_id int(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -178,6 +177,18 @@ CREATE TABLE student_quiz (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table supervisor_classes
+--
+
+CREATE TABLE supervisor_classes (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  user_id int(100) NOT NULL,
+  class_id int(100) NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Table structure for table Instructor_courses

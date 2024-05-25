@@ -41,7 +41,8 @@ if (!$_SESSION['user'] || !isset($_SESSION['user'])) {
                 <li class="menu-title">Navigation</li>
 
                 <!-- Check user role and display menu items accordingly -->
-                <?php if ($user['role'] == 'director' || $user['role'] == 'supervisor') : ?>
+
+                <?php if ($user['role'] == 'director') : ?>
                     <li>
                         <a href="users.php">
                             <i class="mdi mdi-calendar-blank-outline"></i>
@@ -58,6 +59,13 @@ if (!$_SESSION['user'] || !isset($_SESSION['user'])) {
                         <a href="courses.php">
                             <i class="mdi mdi-calendar-blank-outline"></i>
                             <span> Courses </span>
+                        </a>
+                    </li>
+                <?php elseif ($user['role'] == 'supervisor') : ?>
+                    <li>
+                        <a href="classes.php">
+                            <i class="mdi mdi-calendar-blank-outline"></i>
+                            <span> Classes </span>
                         </a>
                     </li>
                 <?php elseif ($user['role'] == 'instructor') : ?>

@@ -11,8 +11,8 @@ if (!isset($_SESSION['user'])) {
 }
 
 // Fetch classes
-$classes = $databaseService->getClasses();
 $login_user_role = $_SESSION['user']["role"];
+$classes = $databaseService->getClasses($_SESSION['user']);
 
 // Handle class deletion request
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
@@ -76,14 +76,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
             <!-- Start Content-->
             <div class="container-fluid">
 
-                <div class="row add-new-action">
-                    <button style="width: 200px;" type="button" class="btn btn-primary waves-effect waves-light" onclick="window.location.href='edit-class.php';">Add New</button>
-                </div>
+                <?php if ($login_user_role === 'director') : ?>
+                    <div class="row add-new-action">
+                        <button style="width: 200px;" type="button" class="btn btn-primary waves-effect waves-light" onclick="window.location.href='edit-class.php';">Add New</button>
+                    </div>
+                <?php endif; ?>
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-
                                 <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
                                     <thead>
                                         <tr>
@@ -100,11 +101,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
                                                 <td><?php echo htmlspecialchars($class['name']); ?></td>
                                                 <td><?php echo htmlspecialchars($class['section']); ?></td>
                                                 <td class="user-actions">
-                                                    <a href="edit-class.php?id=<?php echo urlencode($class['id']); ?>" class="btn btn-success edit-action">Edit</a>
-                                                    <form method="POST" action="classes.php" class="edit-action">
-                                                        <input type="hidden" name="delete_class_id" value="<?php echo $class['id']; ?>">
-                                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class?');">Delete</button>
-                                                    </form>
+                                                    <?php if ($login_user_role === 'director') : ?>
+                                                        <a href="edit-class.php?id=<?php echo urlencode($class['id']); ?>" class="btn btn-success edit-action">Edit</a>
+                                                        <form method="POST" action="classes.php" class="edit-action">
+                                                            <input type="hidden" name="delete_class_id" value="<?php echo $class['id']; ?>">
+                                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this class?');">Delete</button>
+                                                        </form>
+                                                    <?php endif; ?>
                                                     <a href="manage-course-assignments.php?class_id=<?php echo urlencode($class['id']); ?>" class="btn btn-info edit-action">Manage Courses</a>
                                                     <?php if ($login_user_role === 'director' || $login_user_role === 'supervisor') : ?>
                                                         <a href="manage-schedule.php?id=<?php echo urlencode($class['id']); ?>" class="btn btn-info">Manage Schedule</a>

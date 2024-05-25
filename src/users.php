@@ -120,6 +120,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_id'])) {
                                                     <?php if ($user['role'] === 'instructor' && $login_user_role === 'director') : ?>
                                                         <a href="manage-instructor.php?id=<?php echo urlencode($user['id']); ?>" class="btn btn-info">Manage Instructor</a>
                                                     <?php endif; ?>
+                                                    <?php if ($user['role'] === 'supervisor' && $login_user_role === 'director') : ?>
+                                                        <a href="manage-supervisor.php?id=<?php echo urlencode($user['id']); ?>" class="btn btn-info">Manage Supervisor</a>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

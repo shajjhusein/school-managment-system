@@ -140,12 +140,21 @@ class DatabaseService
             return false; // Return false if an error occurred during the database operation
         }
     }
-    public function getClasses()
+    public function getClasses($user = null)
     {
-        // Prepare the SQL statement to retrieve users based on their specific role
-        $stmt = $this->db->prepare('SELECT * FROM classe');
-        // Execute the prepared statement with the provided role
-        $stmt->execute();
+        // Check if the role is 'supervisor'
+        if ($user && $user['role'] === 'supervisor') {
+            // Prepare the SQL statement to retrieve classes for supervisor
+            $stmt = $this->db->prepare('SELECT c.* FROM classe c INNER JOIN supervisor_classes sc ON c.id = sc.class_id WHERE sc.user_id = ?');
+            // Execute the prepared statement with the user id
+            $stmt->execute([$user['id']]);
+        } else {
+            // Prepare the SQL statement to retrieve all classes
+            $stmt = $this->db->prepare('SELECT * FROM classe');
+            // Execute the prepared statement
+            $stmt->execute();
+        }
+
         // Fetch all result rows as an array of arrays
         $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -266,6 +275,27 @@ class DatabaseService
         try {
             // Prepare a DELETE statement
             $stmt = $this->db->prepare("DELETE FROM materials WHERE id = ?");
+
+            // Execute the deletion
+            $stmt->execute([$id]);
+
+            // Check if the deletion was successful
+            if ($stmt->rowCount() > 0) {
+                // Optionally, you might want to handle related data deletions here
+                return true;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            // Handle any SQL errors
+            return false;
+        }
+    }
+    public function deleteSupervisorClass($id)
+    {
+        try {
+            // Prepare a DELETE statement
+            $stmt = $this->db->prepare("DELETE FROM supervisor_classes WHERE id = ?");
 
             // Execute the deletion
             $stmt->execute([$id]);
@@ -867,6 +897,56 @@ class DatabaseService
         } catch (PDOException $e) {
             error_log("Error fetching student grades: " . $e->getMessage());
             return [];
+        }
+    }
+
+    public function assignClassToSupervisor($supervisor_id, $classId)
+    {
+        try {
+            // First, check if the course is already assigned to this instructor for the specified class
+            $checkStmt = $this->db->prepare("SELECT COUNT(*) FROM supervisor_classes WHERE user_id = ? AND class_id = ?");
+            $checkStmt->execute([$supervisor_id, $classId]);
+            $exists = $checkStmt->fetchColumn() > 0;
+
+            if ($exists) {
+                // If the assignment already exists, return false or handle as needed
+                return false; // No need to reassign the same class to the same instructor
+            }
+
+            // If not already assigned, proceed to insert the new assignment
+            $stmt = $this->db->prepare("INSERT INTO supervisor_classes (user_id, class_id) VALUES (?, ?)");
+            $stmt->execute([$supervisor_id, $classId]);
+            return true; // Return true to indicate successful assignment
+        } catch (PDOException $e) {
+            // Log and handle any error during the database operation
+            // error_log("Failed to assign class to instructor: " . $e->getMessage());
+            return false; // Return false if an error occurs
+        }
+    }
+    public function getSupervisorClasses($supervisor_id)
+    {
+        try {
+            // Prepare the SQL query to fetch classes assigned to the supervisor
+            $stmt = $this->db->prepare("SELECT sc.id AS supervisor_class_id, c.id, c.name, c.section
+                                    FROM supervisor_classes sc
+                                    INNER JOIN classe c ON sc.class_id = c.id
+                                    WHERE sc.user_id = ?");
+
+            // Bind the supervisor_id parameter
+            $stmt->bindParam(1, $supervisor_id, PDO::PARAM_INT);
+
+            // Execute the query
+            $stmt->execute();
+
+            // Fetch all rows as an associative array
+            $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Return the fetched classes
+            return $classes;
+        } catch (PDOException $e) {
+            // Log and handle any error during the database operation
+            // error_log("Failed to fetch supervisor classes: " . $e->getMessage());
+            return []; // Return an empty array if an error occurs
         }
     }
 }

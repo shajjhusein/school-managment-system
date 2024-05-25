@@ -19,6 +19,8 @@ if (isset($_POST['email'])) {
                     header('Location: index.php');
                     break;
                 case 'supervisor':
+                    header('Location: classes.php');
+                    break;
                 case 'director':
                     header('Location: users.php');
                     break;
