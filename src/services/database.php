@@ -16,7 +16,7 @@ class DatabaseService
     private function __construct()
     {
         $host = '127.0.0.1';
-        $dbname = 'isd1';
+        $dbname = 'sms1';
         $username = 'root';
         $password = 'admin';
         $charset = 'utf8mb4';
@@ -61,19 +61,19 @@ class DatabaseService
         // Check if the role is "director"
         if ($role === 'director') {
             // Prepare the SQL statement to retrieve all users if the role is director
-            $stmt = $this->db->prepare('SELECT users.*, classe.name AS class_name
+            $stmt = $this->db->prepare('SELECT users.*, class.name AS class_name
             FROM users
-            LEFT JOIN studentClass ON users.id = studentClass.user_id
-            LEFT JOIN classe ON classe.id = studentClass.class_id;
+            LEFT JOIN student_class ON users.id = student_class.user_id
+            LEFT JOIN class ON class.id = student_class.class_id;
             ');
             // Execute the prepared statement without any parameters
             $stmt->execute();
         } else {
             // Prepare the SQL statement to retrieve users based on their specific role
-            $stmt = $this->db->prepare('SELECT users.*, classe.name AS class_name
+            $stmt = $this->db->prepare('SELECT users.*, class.name AS class_name
             FROM users
-            LEFT JOIN studentClass ON users.id = studentClass.user_id
-            LEFT JOIN classe ON classe.id = studentClass.class_id
+            LEFT JOIN student_class ON users.id = student_class.user_id
+            LEFT JOIN class ON class.id = student_class.class_id
              WHERE users.role = ?;');
             // Execute the prepared statement with the provided role
             $stmt->execute([$role]);
@@ -106,9 +106,9 @@ class DatabaseService
 
             // Check if class is provided and not empty
             if (!empty($class)) {
-                // Prepare the SQL statement to insert into studentClass
-                $stmtClass = $this->db->prepare("INSERT INTO studentClass (user_id, class_id) VALUES (?, ?)");
-                // Execute insertion into studentClass
+                // Prepare the SQL statement to insert into student_class
+                $stmtClass = $this->db->prepare("INSERT INTO student_class (user_id, class_id) VALUES (?, ?)");
+                // Execute insertion into student_class
                 $stmtClass->execute([$userId, $class]);
             }
 
@@ -144,22 +144,22 @@ class DatabaseService
     {
         // Check if the role is 'supervisor'
         if ($user && $user['role'] === 'supervisor') {
-            // Prepare the SQL statement to retrieve classes for supervisor
-            $stmt = $this->db->prepare('SELECT c.* FROM classe c INNER JOIN supervisor_classes sc ON c.id = sc.class_id WHERE sc.user_id = ?');
+            // Prepare the SQL statement to retrieve classs for supervisor
+            $stmt = $this->db->prepare('SELECT c.* FROM class c INNER JOIN supervisor_classes sc ON c.id = sc.class_id WHERE sc.user_id = ?');
             // Execute the prepared statement with the user id
             $stmt->execute([$user['id']]);
         } else {
-            // Prepare the SQL statement to retrieve all classes
-            $stmt = $this->db->prepare('SELECT * FROM classe');
+            // Prepare the SQL statement to retrieve all classs
+            $stmt = $this->db->prepare('SELECT * FROM class');
             // Execute the prepared statement
             $stmt->execute();
         }
 
         // Fetch all result rows as an array of arrays
-        $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $classs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Return the array of classes
-        return $classes;
+        // Return the array of classs
+        return $classs;
     }
 
     public function getInstructorClassesByUserId($userId)
@@ -168,7 +168,7 @@ class DatabaseService
             // Prepare the SQL statement
             $stmt = $this->db->prepare("SELECT DISTINCT c.id, c.name, c.section 
                                     FROM class_course cc
-                                    JOIN classe c ON cc.class_id = c.id
+                                    JOIN class c ON cc.class_id = c.id
                                     JOIN Instructor_courses ic ON cc.course_id = ic.course_id
                                     WHERE ic.user_id = :userId");
             $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
@@ -178,18 +178,18 @@ class DatabaseService
             return $results;
         } catch (PDOException $e) {
             // Consider logging the error instead of displaying it
-            error_log("Error fetching instructor classes: " . $e->getMessage());
+            error_log("Error fetching instructor classs: " . $e->getMessage());
             return [];
         }
     }
 
     public function getUserById($id)
     {
-        // Updated query to include a JOIN with the studentClass table
+        // Updated query to include a JOIN with the student_class table
         $stmt = $this->db->prepare(
-            "SELECT users.*, studentClass.class_id 
+            "SELECT users.*, student_class.class_id 
             FROM users 
-            LEFT JOIN studentClass ON users.id = studentClass.user_id 
+            LEFT JOIN student_class ON users.id = student_class.user_id 
             WHERE users.id = ?"
         );
         $stmt->execute([$id]);
@@ -208,16 +208,16 @@ class DatabaseService
 
         // Check and update or insert class
         if (!empty($class)) {
-            // First, check if the studentClass record exists
-            $stmtCheck = $this->db->prepare("SELECT * FROM studentClass WHERE user_id = ?");
+            // First, check if the student_class record exists
+            $stmtCheck = $this->db->prepare("SELECT * FROM student_class WHERE user_id = ?");
             $stmtCheck->execute([$id]);
             if ($stmtCheck->fetch()) {
-                // Update existing studentClass record
-                $stmtClass = $this->db->prepare("UPDATE studentClass SET class_id = ? WHERE user_id = ?");
+                // Update existing student_class record
+                $stmtClass = $this->db->prepare("UPDATE student_class SET class_id = ? WHERE user_id = ?");
                 $stmtClass->execute([$class, $id]);
             } else {
-                // Insert new studentClass record
-                $stmtClass = $this->db->prepare("INSERT INTO studentClass (user_id, class_id) VALUES (?, ?)");
+                // Insert new student_class record
+                $stmtClass = $this->db->prepare("INSERT INTO student_class (user_id, class_id) VALUES (?, ?)");
                 $stmtClass->execute([$id, $class]);
             }
         }
@@ -315,7 +315,7 @@ class DatabaseService
     public function getClassById($id)
     {
         try {
-            $stmt = $this->db->prepare("SELECT * FROM classe WHERE id = ?");
+            $stmt = $this->db->prepare("SELECT * FROM class WHERE id = ?");
             $stmt->execute([$id]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -326,7 +326,7 @@ class DatabaseService
     // Add a class
     public function addClass($name, $section)
     {
-        $stmt = $this->db->prepare("INSERT INTO classe (name, section) VALUES (?, ?)");
+        $stmt = $this->db->prepare("INSERT INTO class (name, section) VALUES (?, ?)");
         $stmt->execute([$name, $section]);
         return $stmt->rowCount() > 0;
     }
@@ -334,7 +334,7 @@ class DatabaseService
     // Update a class
     public function updateClass($id, $name, $section)
     {
-        $stmt = $this->db->prepare("UPDATE classe SET name = ?, section = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE class SET name = ?, section = ? WHERE id = ?");
         $stmt->execute([$name, $section, $id]);
         return $stmt->rowCount() > 0;
     }
@@ -342,7 +342,7 @@ class DatabaseService
     // Delete a class
     public function deleteClass($id)
     {
-        $stmt = $this->db->prepare("DELETE FROM classe WHERE id = ?");
+        $stmt = $this->db->prepare("DELETE FROM class WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
     }
@@ -492,13 +492,29 @@ class DatabaseService
     {
         try {
             $stmt = $this->db->prepare("
-                SELECT DISTINCT users.id, users.name, users.email,course.name as courseName
-                FROM users
-                INNER JOIN studentClass ON users.id = studentClass.user_id
-                INNER JOIN course ON studentClass.class_id = course.class_id
-                INNER JOIN Instructor_courses ON course.id = Instructor_courses.course_id
-                WHERE Instructor_courses.user_id = :instructor_id
-                AND Instructor_courses.class_id = :class_id
+                SELECT 
+                    users.id, 
+                    users.name, 
+                    users.email, 
+                    GROUP_CONCAT(course.name SEPARATOR ', ') AS courseNames
+                FROM 
+                    users
+                INNER JOIN 
+                    student_class ON users.id = student_class.user_id
+                INNER JOIN 
+                    class_course ON student_class.class_id = class_course.class_id
+                INNER JOIN 
+                    course ON class_course.course_id = course.id
+                INNER JOIN 
+                    Instructor_courses ON course.id = Instructor_courses.course_id
+                WHERE 
+                    Instructor_courses.user_id = :instructor_id
+                AND 
+                    Instructor_courses.class_id = :class_id
+                GROUP BY 
+                    users.id, 
+                    users.name, 
+                    users.email;
             ");
             $stmt->bindParam(':instructor_id', $instructorId);
             $stmt->bindParam(':class_id', $classId);
@@ -510,24 +526,40 @@ class DatabaseService
             return false;
         }
     }
-    public function getStudentsByInstructorAndClassAndCourse($instructorId, $classId, $course_id)
+
+
+    public function getStudentsByInstructorAndClassAndCourse($instructorId, $classId, $courseId)
     {
         try {
             $stmt = $this->db->prepare("
-                SELECT DISTINCT users.id, users.name, users.email
-                FROM users
-                INNER JOIN studentClass ON users.id = studentClass.user_id
-                INNER JOIN course ON studentClass.class_id = course.class_id
-                INNER JOIN Instructor_courses ON course.id = Instructor_courses.course_id
-                WHERE Instructor_courses.user_id = :instructor_id
-                AND Instructor_courses.class_id = :class_id
-                AND course.id = :course_id
-
-            ");
+            SELECT 
+                users.id, 
+                users.name, 
+                users.email
+            FROM 
+                users
+            INNER JOIN 
+                student_class ON users.id = student_class.user_id
+            INNER JOIN 
+                class_course ON student_class.class_id = class_course.class_id
+            INNER JOIN 
+                course ON class_course.course_id = course.id
+            INNER JOIN 
+                Instructor_courses ON course.id = Instructor_courses.course_id
+            WHERE 
+                Instructor_courses.user_id = :instructor_id
+            AND 
+                Instructor_courses.class_id = :class_id
+            AND 
+                course.id = :course_id
+            GROUP BY 
+                users.id, 
+                users.name, 
+                users.email;
+        ");
             $stmt->bindParam(':instructor_id', $instructorId);
             $stmt->bindParam(':class_id', $classId);
-            $stmt->bindParam(':course_id', $course_id);
-
+            $stmt->bindParam(':course_id', $courseId);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -536,6 +568,7 @@ class DatabaseService
             return false;
         }
     }
+
 
     public function generateMonthlySchedule($classId)
     {
@@ -624,7 +657,7 @@ class DatabaseService
                     'title' => $item['course_name'], // use course name as the title
                     'start' => $item['day'] . 'T' . $item['start_time'], // Combine date and time for full ISO8601 string
                     'end' => $item['day'] . 'T' . $item['end_time'],
-                    'className' => 'bg-info' // Optional: you can use different classes for styling
+                    'className' => 'bg-info' // Optional: you can use different classs for styling
                 ];
             }, $results);
 
@@ -656,7 +689,7 @@ class DatabaseService
     {
         try {
             // Prepare SQL statement to fetch class IDs associated with the user
-            $stmt = $this->db->prepare("SELECT class_id FROM studentClass WHERE user_id = :userId");
+            $stmt = $this->db->prepare("SELECT class_id FROM student_class WHERE user_id = :userId");
             $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
             $stmt->execute();
             $classIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -692,7 +725,7 @@ class DatabaseService
             // Prepare the SQL query to fetch user's courses
             $stmt = $this->db->prepare("
             SELECT c.id, c.name, c.description
-            FROM studentClass sc
+            FROM student_class sc
             INNER JOIN class_course cc ON sc.class_id = cc.class_id
             INNER JOIN course c ON cc.course_id = c.id
             WHERE sc.user_id = ?
@@ -719,10 +752,10 @@ class DatabaseService
     {
         try {
             // Prepare SQL statement to fetch the class name associated with the user
-            $stmt = $this->db->prepare("SELECT classe.name 
-                                    FROM studentClass 
-                                    JOIN classe ON studentClass.class_id = classe.id 
-                                    WHERE studentClass.user_id = :userId");
+            $stmt = $this->db->prepare("SELECT class.name 
+                                    FROM student_class 
+                                    JOIN class ON student_class.class_id = class.id 
+                                    WHERE student_class.user_id = :userId");
             $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
             $stmt->execute();
             $className = $stmt->fetchColumn();
@@ -803,7 +836,7 @@ class DatabaseService
             $stmt = $this->db->prepare("
             SELECT u.id, u.name, u.email ,u.date_of_birth
             FROM users u
-            INNER JOIN studentClass sc ON u.id = sc.user_id
+            INNER JOIN student_class sc ON u.id = sc.user_id
             INNER JOIN class_course cc ON sc.class_id = cc.class_id
             WHERE cc.course_id = ? AND u.role = 'student'
         ");
@@ -926,10 +959,10 @@ class DatabaseService
     public function getSupervisorClasses($supervisor_id)
     {
         try {
-            // Prepare the SQL query to fetch classes assigned to the supervisor
+            // Prepare the SQL query to fetch classs assigned to the supervisor
             $stmt = $this->db->prepare("SELECT sc.id AS supervisor_class_id, c.id, c.name, c.section
                                     FROM supervisor_classes sc
-                                    INNER JOIN classe c ON sc.class_id = c.id
+                                    INNER JOIN class c ON sc.class_id = c.id
                                     WHERE sc.user_id = ?");
 
             // Bind the supervisor_id parameter
@@ -939,13 +972,13 @@ class DatabaseService
             $stmt->execute();
 
             // Fetch all rows as an associative array
-            $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $classs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Return the fetched classes
-            return $classes;
+            // Return the fetched classs
+            return $classs;
         } catch (PDOException $e) {
             // Log and handle any error during the database operation
-            // error_log("Failed to fetch supervisor classes: " . $e->getMessage());
+            // error_log("Failed to fetch supervisor classs: " . $e->getMessage());
             return []; // Return an empty array if an error occurs
         }
     }

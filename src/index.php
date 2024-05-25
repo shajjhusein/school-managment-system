@@ -183,8 +183,9 @@ $studentGrades = $databaseService->fetchStudentGrades($user['id']);
                                                 <thead>
                                                     <tr>
                                                         <th>ID</th>
-                                                        <th>Name</th>
-                                                        <th>Description</th>
+                                                        <th>Posted Date</th>
+                                                        <th>Due Date</th>
+                                                        <th>Content</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -212,8 +213,9 @@ $studentGrades = $databaseService->fetchStudentGrades($user['id']);
                                                 <thead>
                                                     <tr>
                                                         <th>ID</th>
-                                                        <th>Name</th>
-                                                        <th>Description</th>
+                                                        <th>Posted Date</th>
+                                                        <th>Content</th>
+                                                        <th>Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -222,7 +224,9 @@ $studentGrades = $databaseService->fetchStudentGrades($user['id']);
                                                             <td><?php echo $material['id']; ?></td>
                                                             <td><?php echo isset($material['cate_posted']) ? $material['cate_posted'] : 'N/A'; ?></td>
                                                             <td><?php echo $material['content']; ?></td>
-
+                                                            <td>
+                                                                <button type="submit" class="btn btn-success" onclick="alert('Download Material Done');">Download</button>
+                                                            </td>
                                                         </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
@@ -281,7 +285,7 @@ $studentGrades = $databaseService->fetchStudentGrades($user['id']);
     </div>
     <!-- END wrapper -->
 
-    
+
 
     <?php include 'partials/footer-scripts.php'; ?>
 

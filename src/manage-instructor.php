@@ -253,7 +253,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="role" class="form-label">Class</label>
+                                        <label for="role" class="form-label">Course</label>
                                         <select id="student_course" name="student_course" class="form-select" required onchange="loadInstructorStudentsByClassByCourse(this.value,<?php echo $instructor_id; ?>);">
                                             <option value="">Select a Class</option>
                                         </select>

@@ -4,7 +4,7 @@
 $servername = "localhost"; // or your server IP address
 $username = "admin"; // MySQL username
 $password = "admin"; // MySQL password
-$database = "isd1"; // Name of the database
+$database = "sms"; // Name of the database
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $database);
@@ -15,7 +15,7 @@ if ($conn->connect_error) {
 }
 
 // SQL file path
-$sql_file = "./isd1.sql";
+$sql_file = "./sms.sql";
 
 // Read the SQL file
 $sql_contents = file_get_contents($sql_file);
@@ -29,5 +29,3 @@ if ($conn->multi_query($sql_contents) === TRUE) {
 
 // Close connection
 $conn->close();
-
-?>
