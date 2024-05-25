@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
     function loadCourses(classId) {
         if (classId) {
             // AJAX call to fetch courses for a given class
-            fetch('get_http_data.php?class_id=' + classId)
+            fetch('manage_data.php?class_id=' + classId)
                 .then(response => response.json())
                 .then(data => {
                     let courseSelect = document.getElementById('course');
@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
     function loadInstructorCourses(classId, instructorId) {
         if (classId) {
             // AJAX call to fetch courses for a given class
-            fetch('get_http_data.php?instructor_class_id=' + classId + '&instructor_id=' +
+            fetch('manage_data.php?instructor_class_id=' + classId + '&instructor_id=' +
                     instructorId)
                 .then(response => response.json())
                 .then(data => {
@@ -90,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
     function loadInstructorStudentsByClass(classId, instructorId) {
         if (classId) {
             // AJAX call to fetch courses for a given class
-            fetch('get_http_data.php?instructor_student_class_id=' + classId + '&instructor_id=' +
+            fetch('manage_data.php?instructor_student_class_id=' + classId + '&instructor_id=' +
                     instructorId)
                 .then(response => response.json())
                 .then(data => {
@@ -107,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
                         cellEmail.textContent = course.email
                     });
                 }).catch(error => console.error('Error loading student:', error));
-            fetch('get_http_data.php?class_id=' + classId)
+            fetch('manage_data.php?class_id=' + classId)
                 .then(response => response.json())
                 .then(data => {
                     let courseSelect = document.getElementById('student_course');
@@ -128,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
             // AJAX call to fetch courses for a given class
             var selectElement = document.getElementById('class_id_to_get');
             var selectedValue = selectElement.value;
-            fetch('get_http_data.php?instructor_student_class_course_id=' + courseId + '&instructor_student_class_class_id=' +
+            fetch('manage_data.php?instructor_student_class_course_id=' + courseId + '&instructor_student_class_class_id=' +
                     selectedValue + '&instructor_id=' +
                     instructorId)
                 .then(response => response.json())
@@ -293,7 +293,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_course'])) {
 </div>
 <!-- END wrapper -->
 
-<?php include 'partials/right-sidebar.php'; ?>
+
 
 <?php include 'partials/footer-scripts.php'; ?>
 

@@ -64,7 +64,7 @@ if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
 <?php include 'partials/body.php'; ?>
 <script>
     function fetchStudentQuizzes(userId) {
-        fetch(`get_http_data.php?fetch_user_quiz_grades=${userId}`)
+        fetch(`manage_data.php?fetch_user_quiz_grades=${userId}`)
             .then(response => response.json())
             .then(data => {
                 const tableBody = document.getElementById('student_quizzes_table_body');
@@ -105,7 +105,7 @@ if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
         formData.append('user_id', user_id);
         formData.append('grade', grade);
 
-        fetch('get_http_data.php', {
+        fetch('manage_data.php', {
                 method: 'POST',
                 body: formData
             })
@@ -265,7 +265,7 @@ if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
         </div>
         <!-- END wrapper -->
 
-        <?php include 'partials/right-sidebar.php'; ?>
+        
 
         <?php include 'partials/footer-scripts.php'; ?>
 

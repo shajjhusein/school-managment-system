@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_class'])) {
     function loadSupervisorClasses(supervisor_id) {
         if (supervisor_id) {
             // AJAX call to fetch courses for a given class
-            fetch('get_http_data.php?get_supervisor_classes_by_id=' + supervisor_id)
+            fetch('manage_data.php?get_supervisor_classes_by_id=' + supervisor_id)
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById('classesTableBody');
@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_class'])) {
             formData.append('id', id);
 
             // Send POST request to delete class
-            fetch('get_http_data.php', {
+            fetch('manage_data.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -214,7 +214,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_class'])) {
 </div>
 <!-- END wrapper -->
 
-<?php include 'partials/right-sidebar.php'; ?>
+
 
 <?php include 'partials/footer-scripts.php'; ?>
 

@@ -205,7 +205,6 @@ CREATE TABLE Instructor_courses (
 --
 -- Indexes for dumped tables
 --
-
 --
 -- Indexes for table classe
 --

@@ -119,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 <!-- END wrapper -->
 
-<?php include 'partials/right-sidebar.php'; ?>
+
 
 <?php include 'partials/footer-scripts.php'; ?>
 

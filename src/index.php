@@ -281,7 +281,7 @@ $studentGrades = $databaseService->fetchStudentGrades($user['id']);
     </div>
     <!-- END wrapper -->
 
-    <?php include 'partials/right-sidebar.php'; ?>
+    
 
     <?php include 'partials/footer-scripts.php'; ?>
 
@@ -307,7 +307,7 @@ $studentGrades = $databaseService->fetchStudentGrades($user['id']);
     <script src="assets/js/app.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            fetch(`get_http_data.php?generate_schedule_for_student=${<?php echo $user['id']; ?>}`)
+            fetch(`manage_data.php?generate_schedule_for_student=${<?php echo $user['id']; ?>}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log(data)

@@ -49,7 +49,7 @@ $classes = $databaseService->getInstructorClassesByUserId($instructor_id);  // A
     function loadInstructorCourses(classId, instructorId) {
         if (classId) {
             // AJAX call to fetch courses for a given class
-            fetch('get_http_data.php?instructor_class_id=' + classId + '&instructor_id=' +
+            fetch('manage_data.php?instructor_class_id=' + classId + '&instructor_id=' +
                     instructorId)
                 .then(response => response.json())
                 .then(data => {
@@ -185,7 +185,7 @@ $classes = $databaseService->getInstructorClassesByUserId($instructor_id);  // A
 </div>
 <!-- END wrapper -->
 
-<?php include 'partials/right-sidebar.php'; ?>
+
 
 <?php include 'partials/footer-scripts.php'; ?>
 

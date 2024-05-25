@@ -140,7 +140,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_class_id'])) {
 </div>
 <!-- END wrapper -->
 
-<?php include 'partials/right-sidebar.php'; ?>
 
 <?php include 'partials/footer-scripts.php'; ?>
 

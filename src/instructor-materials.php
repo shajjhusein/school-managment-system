@@ -60,7 +60,7 @@ if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
                 formData.append('material_id', materialId); // Set the quiz ID
 
                 // Send POST request to delete quiz
-                fetch('get_http_data.php', {
+                fetch('manage_data.php', {
                         method: 'POST',
                         body: formData
                     })
@@ -96,7 +96,7 @@ if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
 
 
             // Send POST request to add quiz
-            fetch('get_http_data.php', {
+            fetch('manage_data.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -235,7 +235,7 @@ if (isset($_GET['course_id']) && isset($_GET['class_id'])) {
 </div>
 <!-- END wrapper -->
 
-<?php include 'partials/right-sidebar.php'; ?>
+
 
 <?php include 'partials/footer-scripts.php'; ?>
 
